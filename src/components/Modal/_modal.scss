@@ -1,0 +1,47 @@
+@import "./responsive";
+
+.modal {
+
+
+  .walletclose{
+    position: absolute;
+    background: transparent;
+    right: 20px;
+    top: 16px;
+    cursor: pointer;
+  }
+  .modal-dialog {
+    // margin-top: 260px;
+    max-width: fit-content;
+    padding: 0 16px;
+
+    .modal-content {
+      padding: 0;
+      border: none;
+      border-radius: 20px;
+      padding-top: 66px;
+      @include medium {
+        padding-top: 88px;
+      }
+
+      .close {
+        transition: 0.3s;
+        cursor: pointer;
+        position: absolute;
+        right: 23px;
+        top: 23px;
+        height: fit-content;
+        opacity: 1;
+        width: 18.6px;
+        height: 18.6px;
+        &:hover {
+          opacity: 1;
+        }
+        @include medium {
+          top: 38px;
+          right: 38px;
+        }
+      }
+    }
+  }
+}

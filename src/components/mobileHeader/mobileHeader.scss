@@ -1,0 +1,115 @@
+.mobile-navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    background: linear-gradient(111.64deg, #080b2a 0%, #000000 100.5%);
+    width: 100%;
+    z-index: 7;
+    height: 59px;
+    border-bottom: 2px solid #525469;
+  
+    #hamburgermenu span {
+      display: block;
+      position: absolute;
+      height: 2px;
+      width: 30%;
+      background: #fff;
+      border-radius: 20px;
+      opacity: 1;
+      left: 18px;
+      -webkit-transform: rotate(0deg);
+      -moz-transform: rotate(0deg);
+      -o-transform: rotate(0deg);
+      transform: rotate(0deg);
+      -webkit-transition: 0.25s ease-in-out;
+      -moz-transition: 0.25s ease-in-out;
+      -o-transition: 0.25s ease-in-out;
+      transition: 0.25s ease-in-out;
+    }
+  
+    #hamburgermenu span:nth-child(1) {
+      top: 8px;
+      -webkit-transform-origin: left center;
+      -moz-transform-origin: left center;
+      -o-transform-origin: left center;
+      transform-origin: left center;
+    }
+  
+    #hamburgermenu span:nth-child(2) {
+      top: 14px;
+      -webkit-transform-origin: left center;
+      -moz-transform-origin: left center;
+      -o-transform-origin: left center;
+      transform-origin: left center;
+    }
+  
+    #hamburgermenu span:nth-child(3) {
+      top: 20px;
+      -webkit-transform-origin: left center;
+      -moz-transform-origin: left center;
+      -o-transform-origin: left center;
+      transform-origin: left center;
+    }
+  
+    #hamburgermenu.open span:nth-child(1) {
+      -webkit-transform: rotate(45deg);
+      -moz-transform: rotate(45deg);
+      -o-transform: rotate(45deg);
+      transform: rotate(45deg);
+      top: 13px;
+      left: 13px;
+    }
+  
+    #hamburgermenu.open span:nth-child(2) {
+      width: 0%;
+      opacity: 0;
+    }
+  
+    #hamburgermenu.open {
+      border: 1px solid #f7f7fc;
+      background: inherit;
+  
+      span {
+        background: #f7f7fc;
+      }
+    }
+  
+    #hamburgermenu.open span:nth-child(3) {
+      -webkit-transform: rotate(-45deg);
+      -moz-transform: rotate(-45deg);
+      -o-transform: rotate(-45deg);
+      transform: rotate(-45deg);
+      top: 30px;
+      left: 13px;
+    }
+  }
+  
+  .mobile-menu {
+    background: linear-gradient(111.64deg, #080b2a 0%, #000000 100.5%);
+    width: 100%;
+    position: fixed;
+    top: -1000px;
+    z-index: 1000;
+    transition: all .25s;
+    .mobile-nav-item {
+      background: linear-gradient(87.88deg, #806363 0%, #5c2c2c 100%);
+      // opacity: 0.3;
+      border-radius: 8px;
+  
+      .mobile-nav-link {
+        font-style: normal;
+        font-weight: 500;
+        font-size: 18px;
+        line-height: 32px;
+        color: #ffffff;
+      }
+    }
+  }
+  
+  
+  .mobile-menu-open{
+      top: 59px;
+    box-shadow:0 0 0 1000px rgba(0,0,0,.50);
+    left: 0px;
+  }
+  

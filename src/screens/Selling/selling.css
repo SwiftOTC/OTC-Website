@@ -1,0 +1,111 @@
+.sell-input {
+  border: none;
+  outline: none;
+  padding: 10px;
+  border-radius: 10px;
+}
+
+.input-wrappers {
+  background: rgb(19, 19, 19);
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #b8b8e0;
+  backdrop-filter: blur(12.5px);
+  box-shadow: 0 5px 4px 0 #671ae426;
+  filter: drop-shadow(0 4px 20px #7e3455);
+}
+
+.balance-text {
+  font-size: 14px;
+  color: #fff;
+}
+
+.max-btn {
+  padding: 5px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  background: #fff;
+  color: #7e3455;
+  border: 1px solid #7e3455;
+  font-size: 12px;
+}
+
+.balance-wrapper {
+  right: 0;
+  background: #b98a7f;
+  padding: 1px 10px;
+  border-radius: 8px;
+}
+
+.sell-input:disabled {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.MuiFormLabel-root,
+.MuiInputLabel-root {
+  color: #7e3455 !important;
+  background: rgb(19, 19, 19) !important;
+}
+
+.tokenlogo {
+  width: 20px;
+  height: 20px;
+}
+
+.MuiInputBase-root,
+.MuiOutlinedInput-root,
+.MuiSelect-root {
+  border: 1px solid #7e3455 !important;
+  color: #7e3455 !important;
+  font-weight: 500 !important;
+  border-radius: 8px !important;
+}
+
+.MuiSelect-select,
+.MuiInputBase-input,
+.MuiOutlinedInput-input {
+  display: flex;
+  align-items: center;
+}
+
+.MuiSvgIcon-root,
+.MuiSelect-icon {
+  color: inherit !important;
+}
+
+@media only screen and (max-width: 991px) {
+  .want-to-sell-wrapper,
+  .listing-wrapper {
+    margin-top: 5rem !important;
+  }
+}
+
+@media only screen and (max-width: 600px) {
+  .sell-input {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+
+  .balance-text {
+    font-size: 10px;
+  }
+
+  .tokenlogo {
+    width: 15px;
+    height: 15px;
+  }
+
+  .balance-amount {
+    line-height: 10px;
+  }
+
+  .balance-wrapper {
+    padding: 0;
+    top: -1px;
+  }
+  .max-btn {
+    font-size: 12px;
+  }
+
+}

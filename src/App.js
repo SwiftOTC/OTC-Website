@@ -1,0 +1,2005 @@
+import "./App.css";
+import React, { useState, useEffect, useRef } from "react";
+import Listing from "./screens/Listing/Listing";
+import { Routes } from "react-router-dom";
+import { Route } from "react-router-dom";
+import Header from "./components/header/header";
+import Web3 from "web3";
+import Footer from "./components/footer/footer";
+import MobileHeader from "./components/mobileHeader/mobileHeader";
+import Buying from "./screens/Buying/Buying";
+import Homepage from "./screens/Homepage/Homepage";
+import Selling from "./screens/Selling/Selling";
+import Support from "./screens/Support/Support";
+import { handleSwitchNetworkhook } from "./hooks/switchNetwork";
+
+function App() {
+  const [coinbase, setCoinbase] = useState();
+  const [isConnected, setIsConnected] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [chainId, setChainId] = useState(0);
+
+  const [activityArray, setactivityArray] = useState([]);
+  const [activityArray2, setactivityArray2] = useState([]);
+
+  const [completedOrdersArray, setcompletedOrdersArray] = useState([]);
+  const [openOrdersArray, setopenOrdersArray] = useState([]);
+
+  const [count, setcount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [collectedPage, setCollectedPage] = useState(1);
+  const [collectedPageSlice, setCollectedPageSlice] = useState(20);
+
+  const [collectedPage2, setCollectedPage2] = useState(1);
+  const [collectedPageSlice2, setCollectedPageSlice2] = useState(20);
+
+  const [completedPage, setCompletedPage] = useState(1);
+  const [completedSlice, setCompletedSlice] = useState(20);
+
+  const [openPage, setOpenPage] = useState(1);
+  const [openSlice, setOpenSlice] = useState(20);
+
+  const [totalOrders, settotalOrders] = useState(0);
+
+  const logout = localStorage.getItem("logout");
+  const dataFetchedRef = useRef(false);
+  const dataFetchedRef2 = useRef(false);
+
+  const handleConnect = async () => {
+    await window.connectWallet().then(() => {
+      setIsConnected(true);
+    });
+
+    await window.getCoinbase().then((data) => {
+      localStorage.setItem("logout", "false");
+      setCoinbase(data);
+    });
+  };
+
+  const handleCollectedPage = (e, value) => {
+    setCollectedPage(value);
+    setCollectedPageSlice(value * 20);
+    getActivityOrders(value * 20);
+  };
+
+  const handleCollectedPage2 = (e, value) => {
+    setCollectedPage2(value);
+    setCollectedPageSlice2(value * 20);
+    getActivityOrders2(value * 20);
+  };
+
+  const handleCompletedPage = (e, value) => {
+    setCompletedPage(value);
+    setCompletedSlice(value * 20);
+    getAllCompletedOrders(value * 20);
+  };
+
+  const handleOpenPage = (e, value) => {
+    setOpenPage(value);
+    setOpenSlice(value * 20);
+    getAllOpenOrders(value * 20);
+  };
+
+  const getAllOpenOrders = async (pageslice) => {
+    const netID = await window.ethereum
+      .request({ method: "net_version" })
+      .then((data) => {
+        return parseInt(data);
+      })
+      .catch(console.error);
+    setLoading(true);
+    const otc_contract = new window.infuraWeb3.eth.Contract(
+      window.OTC_ABI,
+      window.config.otc_address
+    );
+
+    const otc_bnb_contract = new window.bscWeb3.eth.Contract(
+      window.OTC_ABI,
+      window.config.otc_bnb_address
+    );
+
+    const openArray = [];
+
+    const openArrayBnb = [];
+
+    const orderCount = await otc_contract.methods
+      .orderCount()
+      .call()
+      .catch((e) => {
+        console.error(e);
+      });
+
+    const orderCount_bnb = await otc_bnb_contract.methods
+      .orderCount()
+      .call()
+      .catch((e) => {
+        console.error(e);
+      });
+
+    if (orderCount && Number(orderCount) > 0) {
+      await Promise.all(
+        window.range(0, orderCount - 1).map(async (i) => {
+          let tokenToSell_decimals;
+          let tokenToBuy_decimals;
+          let tokenToSell_symbol;
+          let tokenToBuy_symbol;
+
+          const orderDetail = await otc_contract.methods
+            .orders(i)
+            .call()
+            .catch((e) => {
+              console.error(e);
+            });
+
+          const filteredInfo = Object.fromEntries(Object.entries(orderDetail));
+
+          const tokenToSell_contract = new window.infuraWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToSell
+          );
+
+          const tokenToBuy_contract = new window.infuraWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToBuy
+          );
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_symbol = "USDC";
+          } else {
+            tokenToSell_symbol = await tokenToSell_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_decimals = 6;
+          } else {
+            tokenToSell_decimals = await tokenToSell_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_decimals = 6;
+          } else {
+            tokenToBuy_decimals = await tokenToBuy_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_symbol = "USDC";
+          } else {
+            tokenToBuy_symbol = await tokenToBuy_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (filteredInfo && filteredInfo.status === "0") {
+            openArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 1,
+            });
+          }
+        })
+      );
+
+      // const finalPendingArray = Object.values((pendingOrdersArray))
+    }
+
+    if (orderCount_bnb && Number(orderCount_bnb) > 0) {
+      const limit = pageslice > orderCount_bnb ? orderCount_bnb : pageslice;
+
+      await Promise.all(
+        window.range(pageslice - 20, limit - 1).map(async (i) => {
+          let tokenToSell_decimals;
+          let tokenToBuy_decimals;
+          let tokenToSell_symbol;
+          let tokenToBuy_symbol;
+
+          const orderDetail = await otc_bnb_contract.methods
+            .orders(i)
+            .call()
+            .catch((e) => {
+              console.error(e);
+            });
+
+          const filteredInfo = Object.fromEntries(Object.entries(orderDetail));
+
+          const tokenToSell_contract = new window.bscWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToSell
+          );
+
+          const tokenToBuy_contract = new window.bscWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToBuy
+          );
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_symbol = "USDC";
+          } else {
+            tokenToSell_symbol = await tokenToSell_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_decimals = 6;
+          } else {
+            tokenToSell_decimals = await tokenToSell_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_decimals = 6;
+          } else {
+            tokenToBuy_decimals = await tokenToBuy_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_symbol = "USDC";
+          } else {
+            tokenToBuy_symbol = await tokenToBuy_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (filteredInfo && filteredInfo.status === "0") {
+            openArrayBnb.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 56,
+            });
+          }
+        })
+      );
+    }
+
+    if (netID === 1) {
+      setopenOrdersArray(openArray.reverse());
+    } else {
+      setopenOrdersArray(openArrayBnb.reverse());
+    }
+    setLoading(false);
+  };
+
+  const getAllCompletedOrders = async (pageslice) => {
+    const netID = await window.ethereum
+      .request({ method: "net_version" })
+      .then((data) => {
+        return parseInt(data);
+      })
+      .catch(console.error);
+
+    setLoading(true);
+    const otc_contract = new window.infuraWeb3.eth.Contract(
+      window.OTC_ABI,
+      window.config.otc_address
+    );
+
+    const otc_bnb_contract = new window.bscWeb3.eth.Contract(
+      window.OTC_ABI,
+      window.config.otc_bnb_address
+    );
+
+    const otc_old_contract = new window.infuraWeb3.eth.Contract(
+      window.OTC_ABI,
+      window.config.otc_old_address
+    );
+
+    const otc_old_bnb_contract = new window.bscWeb3.eth.Contract(
+      window.OTC_ABI,
+      window.config.otc_old_bnb_address
+    );
+
+    const completedArray = [];
+
+    const orderCount = await otc_contract.methods
+      .orderCount()
+      .call()
+      .catch((e) => {
+        console.error(e);
+      });
+
+    const orderCount_bnb = await otc_bnb_contract.methods
+      .orderCount()
+      .call()
+      .catch((e) => {
+        console.error(e);
+      });
+
+    const orderCountOld = await otc_old_contract.methods
+      .orderCount()
+      .call()
+      .catch((e) => {
+        console.error(e);
+      });
+
+    const orderCount_bnbOld = await otc_old_bnb_contract.methods
+      .orderCount()
+      .call()
+      .catch((e) => {
+        console.error(e);
+      });
+
+    if (orderCount && Number(orderCount) > 0) {
+      await Promise.all(
+        window.range(0, orderCount - 1).map(async (i) => {
+          let tokenToSell_decimals;
+          let tokenToBuy_decimals;
+          let tokenToSell_symbol;
+          let tokenToBuy_symbol;
+
+          const orderDetail = await otc_contract.methods
+            .orders(i)
+            .call()
+            .catch((e) => {
+              console.error(e);
+            });
+
+          const filteredInfo = Object.fromEntries(Object.entries(orderDetail));
+
+          const tokenToSell_contract = new window.infuraWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToSell
+          );
+
+          const tokenToBuy_contract = new window.infuraWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToBuy
+          );
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_symbol = "USDC";
+          } else {
+            tokenToSell_symbol = await tokenToSell_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_decimals = 6;
+          } else {
+            tokenToSell_decimals = await tokenToSell_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_decimals = 6;
+          } else {
+            tokenToBuy_decimals = await tokenToBuy_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_symbol = "USDC";
+          } else {
+            tokenToBuy_symbol = await tokenToBuy_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (filteredInfo && filteredInfo.status === "1") {
+            completedArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 1,
+            });
+          }
+        })
+      );
+
+      // const finalPendingArray = Object.values((pendingOrdersArray))
+    }
+
+    if (orderCount_bnb && Number(orderCount_bnb) > 0) {
+      const limit = pageslice > orderCount_bnb ? orderCount_bnb : pageslice;
+
+      await Promise.all(
+        window.range(pageslice - 20, limit - 1).map(async (i) => {
+          let tokenToSell_decimals;
+          let tokenToBuy_decimals;
+          let tokenToSell_symbol;
+          let tokenToBuy_symbol;
+
+          const orderDetail = await otc_bnb_contract.methods
+            .orders(i)
+            .call()
+            .catch((e) => {
+              console.error(e);
+            });
+
+          const filteredInfo = Object.fromEntries(Object.entries(orderDetail));
+
+          const tokenToSell_contract = new window.bscWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToSell
+          );
+
+          const tokenToBuy_contract = new window.bscWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToBuy
+          );
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_symbol = "USDC";
+          } else {
+            tokenToSell_symbol = await tokenToSell_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_decimals = 6;
+          } else {
+            tokenToSell_decimals = await tokenToSell_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_decimals = 6;
+          } else {
+            tokenToBuy_decimals = await tokenToBuy_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_symbol = "USDC";
+          } else {
+            tokenToBuy_symbol = await tokenToBuy_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (filteredInfo && filteredInfo.status === "1") {
+            completedArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 56,
+            });
+          }
+        })
+      );
+    }
+
+    if (orderCountOld && Number(orderCountOld) > 0) {
+      await Promise.all(
+        window.range(0, orderCountOld - 1).map(async (i) => {
+          let tokenToSell_decimals;
+          let tokenToBuy_decimals;
+          let tokenToSell_symbol;
+          let tokenToBuy_symbol;
+
+          const orderDetail = await otc_old_contract.methods
+            .orders(i)
+            .call()
+            .catch((e) => {
+              console.error(e);
+            });
+
+          const filteredInfo = Object.fromEntries(Object.entries(orderDetail));
+
+          const tokenToSell_contract = new window.infuraWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToSell
+          );
+
+          const tokenToBuy_contract = new window.infuraWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToBuy
+          );
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_symbol = "USDC";
+          } else {
+            tokenToSell_symbol = await tokenToSell_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_decimals = 6;
+          } else {
+            tokenToSell_decimals = await tokenToSell_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_decimals = 6;
+          } else {
+            tokenToBuy_decimals = await tokenToBuy_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_symbol = "USDC";
+          } else {
+            tokenToBuy_symbol = await tokenToBuy_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (filteredInfo && filteredInfo.status === "2") {
+            completedArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 1,
+            });
+          }
+        })
+      );
+
+      // const finalPendingArray = Object.values((pendingOrdersArray))
+    }
+
+    if (orderCount_bnbOld && Number(orderCount_bnbOld) > 0) {
+      const limit =
+        pageslice > orderCount_bnbOld ? orderCount_bnbOld : pageslice;
+
+      await Promise.all(
+        window.range(pageslice - 20, limit - 1).map(async (i) => {
+          let tokenToSell_decimals;
+          let tokenToBuy_decimals;
+          let tokenToSell_symbol;
+          let tokenToBuy_symbol;
+
+          const orderDetail = await otc_old_bnb_contract.methods
+            .orders(i)
+            .call()
+            .catch((e) => {
+              console.error(e);
+            });
+
+          const filteredInfo = Object.fromEntries(Object.entries(orderDetail));
+
+          const tokenToSell_contract = new window.bscWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToSell
+          );
+
+          const tokenToBuy_contract = new window.bscWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToBuy
+          );
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_symbol = "USDC";
+          } else {
+            tokenToSell_symbol = await tokenToSell_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_decimals = 6;
+          } else {
+            tokenToSell_decimals = await tokenToSell_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_decimals = 6;
+          } else {
+            tokenToBuy_decimals = await tokenToBuy_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_symbol = "USDC";
+          } else {
+            tokenToBuy_symbol = await tokenToBuy_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (filteredInfo && filteredInfo.status === "2") {
+            completedArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 56,
+            });
+          }
+        })
+      );
+    }
+
+    setcompletedOrdersArray(completedArray.reverse());
+    setLoading(false);
+  };
+
+  const getActivityOrders = async (pageslice) => {
+    setLoading(true);
+    const otc_contract = new window.infuraWeb3.eth.Contract(
+      window.OTC_ABI,
+      window.config.otc_address
+    );
+
+    const otc_bnb_contract = new window.bscWeb3.eth.Contract(
+      window.OTC_ABI,
+      window.config.otc_bnb_address
+    );
+
+    const otc_old_contract = new window.infuraWeb3.eth.Contract(
+      window.OTC_ABI,
+      window.config.otc_old_address
+    );
+
+    const otc_old_bnb_contract = new window.bscWeb3.eth.Contract(
+      window.OTC_ABI,
+      window.config.otc_old_bnb_address
+    );
+
+    const activityArray = [];
+
+    const orderCount = await otc_contract.methods
+      .orderCount()
+      .call()
+      .catch((e) => {
+        console.error(e);
+      });
+
+    const orderCount_bnb = await otc_bnb_contract.methods
+      .orderCount()
+      .call()
+      .catch((e) => {
+        console.error(e);
+      });
+
+    const orderCountOld = await otc_old_contract.methods
+      .orderCount()
+      .call()
+      .catch((e) => {
+        console.error(e);
+      });
+
+    const orderCount_bnbOld = await otc_old_bnb_contract.methods
+      .orderCount()
+      .call()
+      .catch((e) => {
+        console.error(e);
+      });
+
+    settotalOrders(
+      Number(orderCount) +
+        Number(orderCount_bnb) +
+        Number(orderCountOld) +
+        Number(orderCount_bnbOld)
+    );
+
+    if (orderCount && Number(orderCount) > 0) {
+      await Promise.all(
+        window.range(0, orderCount - 1).map(async (i) => {
+          let tokenToSell_decimals;
+          let tokenToBuy_decimals;
+          let tokenToSell_symbol;
+          let tokenToBuy_symbol;
+
+          const orderDetail = await otc_contract.methods
+            .orders(i)
+            .call()
+            .catch((e) => {
+              console.error(e);
+            });
+
+          const filteredInfo = Object.fromEntries(Object.entries(orderDetail));
+
+          const tokenToSell_contract = new window.infuraWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToSell
+          );
+
+          const tokenToBuy_contract = new window.infuraWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToBuy
+          );
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_symbol = "USDC";
+          } else {
+            tokenToSell_symbol = await tokenToSell_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_decimals = 6;
+          } else {
+            tokenToSell_decimals = await tokenToSell_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_decimals = 6;
+          } else {
+            tokenToBuy_decimals = await tokenToBuy_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_symbol = "USDC";
+          } else {
+            tokenToBuy_symbol = await tokenToBuy_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (filteredInfo && filteredInfo.status === "0") {
+            activityArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 1,
+            });
+          } else if (filteredInfo && filteredInfo.status === "1") {
+            activityArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 1,
+            });
+          }
+        })
+      );
+
+      // const finalPendingArray = Object.values((pendingOrdersArray))
+    }
+
+    if (orderCount_bnb && Number(orderCount_bnb) > 0) {
+      const limit = pageslice > orderCount_bnb ? orderCount_bnb : pageslice;
+
+      await Promise.all(
+        window.range(pageslice - 20, limit - 1).map(async (i) => {
+          let tokenToSell_decimals;
+          let tokenToBuy_decimals;
+          let tokenToSell_symbol;
+          let tokenToBuy_symbol;
+
+          const orderDetail = await otc_bnb_contract.methods
+            .orders(i)
+            .call()
+            .catch((e) => {
+              console.error(e);
+            });
+
+          const filteredInfo = Object.fromEntries(Object.entries(orderDetail));
+
+          const tokenToSell_contract = new window.bscWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToSell
+          );
+
+          const tokenToBuy_contract = new window.bscWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToBuy
+          );
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_symbol = "USDC";
+          } else {
+            tokenToSell_symbol = await tokenToSell_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_decimals = 6;
+          } else {
+            tokenToSell_decimals = await tokenToSell_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_decimals = 6;
+          } else {
+            tokenToBuy_decimals = await tokenToBuy_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_symbol = "USDC";
+          } else {
+            tokenToBuy_symbol = await tokenToBuy_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (filteredInfo && filteredInfo.status === "0") {
+            activityArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 56,
+            });
+          } else if (filteredInfo && filteredInfo.status === "1") {
+            activityArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 56,
+            });
+          }
+        })
+      );
+    }
+
+    if (orderCountOld && Number(orderCountOld) > 0) {
+      await Promise.all(
+        window.range(0, orderCount - 1).map(async (i) => {
+          let tokenToSell_decimals;
+          let tokenToBuy_decimals;
+          let tokenToSell_symbol;
+          let tokenToBuy_symbol;
+
+          const orderDetail = await otc_old_contract.methods
+            .orders(i)
+            .call()
+            .catch((e) => {
+              console.error(e);
+            });
+
+          const filteredInfo = Object.fromEntries(Object.entries(orderDetail));
+
+          const tokenToSell_contract = new window.infuraWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToSell
+          );
+
+          const tokenToBuy_contract = new window.infuraWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToBuy
+          );
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_symbol = "USDC";
+          } else {
+            tokenToSell_symbol = await tokenToSell_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_decimals = 6;
+          } else {
+            tokenToSell_decimals = await tokenToSell_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_decimals = 6;
+          } else {
+            tokenToBuy_decimals = await tokenToBuy_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_symbol = "USDC";
+          } else {
+            tokenToBuy_symbol = await tokenToBuy_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (filteredInfo && filteredInfo.status === "0") {
+            activityArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 1,
+            });
+          } else if (filteredInfo && filteredInfo.status === "1") {
+            activityArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 1,
+            });
+          } else if (filteredInfo && filteredInfo.status === "2") {
+            activityArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 1,
+            });
+          }
+        })
+      );
+
+      // const finalPendingArray = Object.values((pendingOrdersArray))
+    }
+
+    if (orderCount_bnbOld && Number(orderCount_bnbOld) > 0) {
+      const limit =
+        pageslice > orderCount_bnbOld ? orderCount_bnbOld : pageslice;
+
+      await Promise.all(
+        window.range(pageslice - 20, limit - 1).map(async (i) => {
+          let tokenToSell_decimals;
+          let tokenToBuy_decimals;
+          let tokenToSell_symbol;
+          let tokenToBuy_symbol;
+
+          const orderDetail = await otc_old_bnb_contract.methods
+            .orders(i)
+            .call()
+            .catch((e) => {
+              console.error(e);
+            });
+
+          const filteredInfo = Object.fromEntries(Object.entries(orderDetail));
+
+          const tokenToSell_contract = new window.bscWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToSell
+          );
+
+          const tokenToBuy_contract = new window.bscWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToBuy
+          );
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_symbol = "USDC";
+          } else {
+            tokenToSell_symbol = await tokenToSell_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_decimals = 6;
+          } else {
+            tokenToSell_decimals = await tokenToSell_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_decimals = 6;
+          } else {
+            tokenToBuy_decimals = await tokenToBuy_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_symbol = "USDC";
+          } else {
+            tokenToBuy_symbol = await tokenToBuy_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (filteredInfo && filteredInfo.status === "0") {
+            activityArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 56,
+            });
+          } else if (filteredInfo && filteredInfo.status === "1") {
+            activityArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 56,
+            });
+          } else if (filteredInfo && filteredInfo.status === "2") {
+            activityArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 56,
+            });
+          }
+        })
+      );
+    }
+
+    setactivityArray(activityArray.reverse());
+    setLoading(false);
+  };
+
+  const getActivityOrders2 = async (pageslice) => {
+    setLoading(true);
+    const otc_contract = new window.infuraWeb3.eth.Contract(
+      window.OTC_ABI,
+      window.config.otc_address
+    );
+
+    const otc_bnb_contract = new window.bscWeb3.eth.Contract(
+      window.OTC_ABI,
+      window.config.otc_bnb_address
+    );
+
+    const otc_old_contract = new window.infuraWeb3.eth.Contract(
+      window.OTC_ABI,
+      window.config.otc_old_address
+    );
+
+    const otc_old_bnb_contract = new window.bscWeb3.eth.Contract(
+      window.OTC_ABI,
+      window.config.otc_old_bnb_address
+    );
+
+    const activityArray = [];
+
+    const orderCount = await otc_contract.methods
+      .orderCount()
+      .call()
+      .catch((e) => {
+        console.error(e);
+      });
+
+    const orderCount_bnb = await otc_bnb_contract.methods
+      .orderCount()
+      .call()
+      .catch((e) => {
+        console.error(e);
+      });
+
+    const orderCountOld = await otc_old_contract.methods
+      .orderCount()
+      .call()
+      .catch((e) => {
+        console.error(e);
+      });
+
+    const orderCount_bnbOld = await otc_old_bnb_contract.methods
+      .orderCount()
+      .call()
+      .catch((e) => {
+        console.error(e);
+      });
+
+    settotalOrders(
+      Number(orderCount) +
+        Number(orderCount_bnb) +
+        Number(orderCountOld) +
+        Number(orderCount_bnbOld)
+    );
+
+    if (orderCount && Number(orderCount) > 0) {
+      await Promise.all(
+        window.range(0, orderCount - 1).map(async (i) => {
+          let tokenToSell_decimals;
+          let tokenToBuy_decimals;
+          let tokenToSell_symbol;
+          let tokenToBuy_symbol;
+
+          const orderDetail = await otc_contract.methods
+            .orders(i)
+            .call()
+            .catch((e) => {
+              console.error(e);
+            });
+
+          const filteredInfo = Object.fromEntries(Object.entries(orderDetail));
+
+          const tokenToSell_contract = new window.infuraWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToSell
+          );
+
+          const tokenToBuy_contract = new window.infuraWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToBuy
+          );
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_symbol = "USDC";
+          } else {
+            tokenToSell_symbol = await tokenToSell_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_decimals = 6;
+          } else {
+            tokenToSell_decimals = await tokenToSell_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_decimals = 6;
+          } else {
+            tokenToBuy_decimals = await tokenToBuy_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_symbol = "USDC";
+          } else {
+            tokenToBuy_symbol = await tokenToBuy_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (filteredInfo && filteredInfo.status === "0") {
+            activityArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 1,
+            });
+          } else if (filteredInfo && filteredInfo.status === "1") {
+            activityArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 1,
+            });
+          }
+        })
+      );
+
+      // const finalPendingArray = Object.values((pendingOrdersArray))
+    }
+    if (orderCountOld && Number(orderCountOld) > 0) {
+      const limit = pageslice > orderCountOld ? orderCountOld : pageslice;
+
+      await Promise.all(
+        window.range(0, limit - 1).map(async (i) => {
+          let tokenToSell_decimals;
+          let tokenToBuy_decimals;
+          let tokenToSell_symbol;
+          let tokenToBuy_symbol;
+
+          const orderDetail = await otc_old_contract.methods
+            .orders(i)
+            .call()
+            .catch((e) => {
+              console.error(e);
+            });
+
+          const filteredInfo = Object.fromEntries(Object.entries(orderDetail));
+
+          const tokenToSell_contract = new window.infuraWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToSell
+          );
+
+          const tokenToBuy_contract = new window.infuraWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToBuy
+          );
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_symbol = "USDC";
+          } else {
+            tokenToSell_symbol = await tokenToSell_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_decimals = 6;
+          } else {
+            tokenToSell_decimals = await tokenToSell_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_decimals = 6;
+          } else {
+            tokenToBuy_decimals = await tokenToBuy_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_symbol = "USDC";
+          } else {
+            tokenToBuy_symbol = await tokenToBuy_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (filteredInfo && filteredInfo.status === "0") {
+            activityArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 1,
+            });
+          } else if (filteredInfo && filteredInfo.status === "1") {
+            activityArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 1,
+            });
+          } else if (filteredInfo && filteredInfo.status === "2") {
+            activityArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 1,
+            });
+          }
+        })
+      );
+
+      // const finalPendingArray = Object.values((pendingOrdersArray))
+    }
+    if (orderCount_bnb && Number(orderCount_bnb) > 0) {
+      const limit = pageslice > orderCount_bnb ? orderCount_bnb : pageslice;
+
+      await Promise.all(
+        window.range(pageslice - 20, limit - 1).map(async (i) => {
+          let tokenToSell_decimals;
+          let tokenToBuy_decimals;
+          let tokenToSell_symbol;
+          let tokenToBuy_symbol;
+
+          const orderDetail = await otc_bnb_contract.methods
+            .orders(i)
+            .call()
+            .catch((e) => {
+              console.error(e);
+            });
+
+          const filteredInfo = Object.fromEntries(Object.entries(orderDetail));
+
+          const tokenToSell_contract = new window.bscWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToSell
+          );
+
+          const tokenToBuy_contract = new window.bscWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToBuy
+          );
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_symbol = "USDC";
+          } else {
+            tokenToSell_symbol = await tokenToSell_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_decimals = 6;
+          } else {
+            tokenToSell_decimals = await tokenToSell_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_decimals = 6;
+          } else {
+            tokenToBuy_decimals = await tokenToBuy_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_symbol = "USDC";
+          } else {
+            tokenToBuy_symbol = await tokenToBuy_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (filteredInfo && filteredInfo.status !== "2") {
+            activityArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 56,
+            });
+          }
+        })
+      );
+    }
+
+    if (orderCount_bnbOld && Number(orderCount_bnbOld) > 0) {
+      const limit =
+        pageslice > orderCount_bnbOld ? orderCount_bnbOld : pageslice;
+      await Promise.all(
+        window.range(pageslice - 20, limit - 1).map(async (i) => {
+          let tokenToSell_decimals;
+          let tokenToBuy_decimals;
+          let tokenToSell_symbol;
+          let tokenToBuy_symbol;
+
+          const orderDetail = await otc_old_bnb_contract.methods
+            .orders(i)
+            .call()
+            .catch((e) => {
+              console.error(e);
+            });
+
+          const filteredInfo = Object.fromEntries(Object.entries(orderDetail));
+
+          const tokenToSell_contract = new window.bscWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToSell
+          );
+
+          const tokenToBuy_contract = new window.bscWeb3.eth.Contract(
+            window.TOKEN_ABI,
+            filteredInfo.tokenToBuy
+          );
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_symbol = "USDC";
+          } else {
+            tokenToSell_symbol = await tokenToSell_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToSell.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToSell_decimals = 6;
+          } else {
+            tokenToSell_decimals = await tokenToSell_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_decimals = 6;
+          } else {
+            tokenToBuy_decimals = await tokenToBuy_contract.methods
+              .decimals()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (
+            filteredInfo.tokenToBuy.toLowerCase() ===
+            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+          ) {
+            tokenToBuy_symbol = "USDC";
+          } else {
+            tokenToBuy_symbol = await tokenToBuy_contract.methods
+              .symbol()
+              .call()
+              .catch((e) => {
+                console.error(e);
+              });
+          }
+          if (filteredInfo && filteredInfo.status === "0") {
+           
+            activityArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 56,
+            });
+          } else if (filteredInfo && filteredInfo.status === "1") {
+            activityArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 56,
+            });
+          } else if (filteredInfo && filteredInfo.status === "2") {
+            activityArray.push({
+              ...filteredInfo,
+              tokenToSellSymbol: tokenToSell_symbol,
+              tokenToBuySymbol: tokenToBuy_symbol,
+              tokenToSellDecimals: tokenToSell_decimals,
+              tokenToBuyDecimals: tokenToBuy_decimals,
+              chain: 56,
+            });
+          }
+        })
+      );
+    }
+
+    setactivityArray2(activityArray.reverse());
+    setLoading(false);
+  };
+
+  const checkNetworkId = async () => {
+    if (window.ethereum) {
+      window.ethereum
+        .request({ method: "net_version" })
+        .then((data) => {
+          setChainId(parseInt(data));
+        })
+        .catch(console.error);
+      getAllOpenOrders(20);
+    } else {
+      setChainId(1);
+    }
+  };
+
+  const checkConnection = async () => {
+    if (logout !== "true") {
+      await window.getCoinbase().then((data) => {
+        if (data) {
+          setCoinbase(data);
+          setIsConnected(true);
+        } else {
+          setCoinbase();
+          setIsConnected(false);
+        }
+      });
+    } else {
+      setIsConnected(false);
+      setCoinbase();
+    }
+  };
+
+  useEffect(() => {
+    if (window.ethereum && window.ethereum.isConnected() === true) {
+      if (logout === "false") {
+        checkConnection();
+      } else {
+        setIsConnected(false);
+
+        setCoinbase();
+        localStorage.setItem("logout", "true");
+      }
+    } else {
+      setIsConnected(false);
+      setCoinbase();
+      localStorage.setItem("logout", "true");
+    }
+    checkNetworkId();
+  }, [coinbase, logout]);
+
+  useEffect(() => {
+    if (dataFetchedRef2.current) return;
+    dataFetchedRef2.current = true;
+    getActivityOrders(20);
+  }, []);
+
+  useEffect(() => {
+    if (dataFetchedRef.current) return;
+    dataFetchedRef.current = true;
+    getActivityOrders2(20);
+  }, []);
+
+  const { ethereum } = window;
+
+  ethereum?.on("chainChanged", checkNetworkId);
+  ethereum?.on("accountsChanged", checkConnection);
+
+  return (
+    <div className="container-fluid d-flex flex-column px-0 align-items-center whole-wrapper">
+      <Header
+        isConnected={isConnected}
+        coinbase={coinbase}
+        onConnect={handleConnect}
+        chainId={chainId}
+        onSwitchNetwork={(value) => {
+          handleSwitchNetworkhook(value);
+        }}
+      />
+      <MobileHeader
+        isConnected={isConnected}
+        coinbase={coinbase}
+        onConnect={handleConnect}
+        chainId={chainId}
+        onSwitchNetwork={(value) => {
+          handleSwitchNetworkhook(value);
+        }}
+      />
+      <div className="container-fluid d-flex allroutes-wrapper flex-column gap-2 align-items-center px-lg-0">
+        <Routes>
+          <Route
+            exact
+            path="/"
+            element={
+              <Homepage
+                isConnected={isConnected}
+                coinbase={coinbase}
+                isAdmin={isAdmin}
+                onConnect={handleConnect}
+                chainId={chainId}
+                activityArray={activityArray2}
+                onCreateOrderSuccess={() => {
+                  setcount(count + 1);
+                }}
+                loading={loading}
+                handleCollectedPage2={handleCollectedPage2}
+                totalOrders2={totalOrders}
+                collectedPage2={collectedPage2}
+              />
+            }
+          />
+          <Route
+            exact
+            path="/selling"
+            element={
+              <Selling
+                isConnected={isConnected}
+                coinbase={coinbase}
+                isAdmin={isAdmin}
+                onConnect={handleConnect}
+                chainId={chainId}
+                openOrdersArray={openOrdersArray}
+                activityArray={activityArray}
+                onCreateOrderSuccess={() => {
+                  setcount(count + 1);
+                }}
+                onSwitchNetwork={(value) => {
+                  handleSwitchNetworkhook(value);
+                }}
+              />
+            }
+          />
+
+          <Route
+            exact
+            path="/buying"
+            element={
+              <Buying
+                isConnected={isConnected}
+                coinbase={coinbase}
+                isAdmin={isAdmin}
+                onConnect={handleConnect}
+                chainId={chainId}
+                openOrdersArray={openOrdersArray}
+                completedOrdersArray={completedOrdersArray}
+                activityArray={activityArray}
+                onCreateOrderSuccess={() => {
+                  setcount(count + 1);
+                }}
+                onSwitchNetwork={(value) => {
+                  handleSwitchNetworkhook(value);
+                }}
+              />
+            }
+          />
+
+          <Route
+            exact
+            path="/open-positions"
+            element={
+              <Listing
+                isConnected={isConnected}
+                coinbase={coinbase}
+                isAdmin={isAdmin}
+                onConnect={handleConnect}
+                chainId={chainId}
+                openOrdersArray={openOrdersArray}
+                completedOrdersArray={completedOrdersArray}
+                activityArray={activityArray}
+                onAcceptOrderComplete={() => {
+                  setcount(count + 1);
+                }}
+                onSwitchNetwork={(value) => {
+                  handleSwitchNetworkhook(value);
+                }}
+                loading={loading}
+                totalOrders={totalOrders}
+                handleCollectedPage={handleCollectedPage}
+                handleOpenPage={handleOpenPage}
+                handleCompletedPage={handleCompletedPage}
+                collectedPage={collectedPage}
+                openPage={openPage}
+                completedPage={completedPage}
+                onActivityClick={getActivityOrders}
+                onCompletedClick={getAllCompletedOrders}
+                onOpenClick={getAllOpenOrders}
+              />
+            }
+          />
+          <Route
+            exact
+            path="/activity"
+            element={
+              <Listing
+                isConnected={isConnected}
+                coinbase={coinbase}
+                isAdmin={isAdmin}
+                onConnect={handleConnect}
+                chainId={chainId}
+                openOrdersArray={openOrdersArray}
+                completedOrdersArray={completedOrdersArray}
+                activityArray={activityArray}
+                onAcceptOrderComplete={() => {
+                  setcount(count + 1);
+                }}
+                onSwitchNetwork={(value) => {
+                  handleSwitchNetworkhook(value);
+                }}
+                loading={loading}
+                totalOrders={totalOrders}
+                handleCollectedPage={handleCollectedPage}
+                handleOpenPage={handleOpenPage}
+                handleCompletedPage={handleCompletedPage}
+                collectedPage={collectedPage}
+                openPage={openPage}
+                completedPage={completedPage}
+                onActivityClick={getActivityOrders}
+                onCompletedClick={getAllCompletedOrders}
+                onOpenClick={getAllOpenOrders}
+              />
+            }
+          />
+
+          <Route exact path="/support" element={<Support />} />
+        </Routes>
+      </div>
+      <Footer orders={activityArray.length} />
+    </div>
+  );
+}
+
+export default App;

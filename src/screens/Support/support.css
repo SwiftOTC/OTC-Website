@@ -1,0 +1,59 @@
+.support-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  place-items: center;
+}
+
+.go-to-btn {
+  width: fit-content;
+  border: none;
+  outline: none;
+  border-radius: 10px;
+  padding: 5px 15px;
+  background: white;
+}
+
+.support-wrapper {
+  margin-top: 7.7rem;
+}
+
+.support-card {
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  aspect-ratio: 16/6;
+  border-radius: 10px;
+}
+
+.support1 {
+  background-image: url(../../assets/png/support1.webp);
+}
+
+.support2 {
+  background-image: url(../../assets/png/support2.webp);
+}
+
+.support3 {
+  background-image: url(../../assets/png/support3.webp);
+}
+
+.social-title {
+  color: #fff;
+  font-weight: 500;
+  font-size: 22px;
+}
+
+.card-desc {
+  color: #fff;
+}
+
+@media only screen and (max-width: 991px) {
+  .support-cards-grid {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+
+  .support-card {
+    aspect-ratio: auto;
+  }
+}

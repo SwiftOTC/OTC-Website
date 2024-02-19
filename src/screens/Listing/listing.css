@@ -1,0 +1,165 @@
+.listing-items-wrapper {
+  background: rgb(19, 19, 19);
+  padding: 20px;
+  border-radius: 8px;
+  border: 1px solid #b8b8e0;
+  backdrop-filter: blur(12.5px);
+  box-shadow: 0 5px 4px 0 #671ae426;
+  filter: drop-shadow(0 4px 20px #7e3455);
+}
+
+.listing-single-item {
+  padding: 5px 10px;
+  border-radius: 12px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.listing-single-item:hover {
+  text-decoration: underline;
+}
+
+.active-item {
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 12px;
+  background: #fff;
+  color: #7e3455;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+ 
+.MuiTableContainer-root {
+  background-color: #bfaab2 !important;
+}
+
+
+.table-wrapper {
+  display: grid;
+  max-height: 425px;
+  overflow-y: auto;
+  min-height: 425px;
+  min-width: auto;
+}
+
+/* .MuiPaginationItem-root, .Mui-selected {
+  background-color: #7e3455 !important;
+} */
+
+@media only screen and (max-width: 436px) {
+  .items-inner-wrapper {
+    flex-direction: column;
+  }
+}
+
+.empty-div-wrapper {
+  margin: auto;
+  position: sticky;
+  left: 35%;
+  width: 0;
+  white-space: nowrap;
+}
+
+.label-wrapper {
+  top: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 0px 10px;
+}
+
+.label-wrapper-bought {
+  top: 0;
+  right: 0;
+  background: rgb(41 76 162 / 50%);
+  padding: 0px 10px;
+}
+
+.label-wrapper-eth {
+  top: -2px;
+  left: 0;
+  padding: 0px 10px;
+}
+
+.label-wrapper-bnb {
+  top: -2px;
+  left: 0;
+  padding: 0px 10px;
+}
+
+.label-wrapper-completed {
+  top: 0;
+  right: 0;
+  background: rgb(46 149 36 / 50%);
+  padding: 0px 10px;
+}
+
+
+.MuiTableCell-root {
+  position: relative;
+}
+
+.label-text {
+  font-size: 10px;
+  color: #fff;
+}
+
+.walletmodal-wrapper {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  border-radius: 20px;
+  border: 1px solid #828fbb;
+  background:rgb(19, 19, 19);
+}
+
+.leftText {
+color: #fff;
+font-size: 14px;
+font-weight: 600;
+}
+
+.rightText {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.summaryseparator {
+  background: #565891;
+  height: 1px;
+  width: 100%;
+}
+
+
+.cancel-btn {
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  background: linear-gradient(
+    180deg,
+    #a52d3e 0%,
+    #924a5d 52.9%,
+    #b70d0d 102.5%
+  );
+  color: #fff;
+}
+
+.confirm-btn {
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: none;
+  outline: none;
+  background: linear-gradient(
+    180deg,
+    #59989f 0%,
+    #46868d 52.9%,
+    #20accd 102.5%
+  );
+  color: #fff;
+}
