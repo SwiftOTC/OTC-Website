@@ -12,6 +12,8 @@ import Homepage from "./screens/Homepage/Homepage";
 import Selling from "./screens/Selling/Selling";
 import Support from "./screens/Support/Support";
 import { handleSwitchNetworkhook } from "./hooks/switchNetwork";
+import "./fonts/Organetto.ttf";
+import OTCRibbon from "./components/otcRibbon/otcRibbon";
 
 function App() {
   const [coinbase, setCoinbase] = useState();
@@ -1737,7 +1739,6 @@ function App() {
               });
           }
           if (filteredInfo && filteredInfo.status === "0") {
-           
             activityArray.push({
               ...filteredInfo,
               tokenToSellSymbol: tokenToSell_symbol,
@@ -1997,7 +1998,7 @@ function App() {
           <Route exact path="/support" element={<Support />} />
         </Routes>
       </div>
-      <Footer orders={activityArray.length} />
+      <Footer orders={totalOrders} />
     </div>
   );
 }

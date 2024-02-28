@@ -5,6 +5,8 @@ import bnbIcon from "../../assets/svg/bnbIcon.svg";
 import telegramIcon from "../../assets/svg/telegram.svg";
 import twitterIcon from "../../assets/svg/twitter.svg";
 import mediumIcon from "../../assets/svg/medium.svg";
+import ordersIcon from "../../assets/svg/ordersIcon.svg";
+import certik from "../../assets/svg/certik.svg";
 
 import logo2 from "../../assets/svg/logowhite.svg";
 
@@ -61,101 +63,125 @@ const Footer = ({ orders }) => {
 
   useEffect(() => {
     updateEthPrice();
-  }, [ethPrice,bnbPrice]);
+  }, [ethPrice, bnbPrice]);
+
+  const year = new Date().getFullYear();
 
   return (
     <div className="footer-wrapper w-100 px-2 py-3">
       <footer>
-        <div className="container-lg px-0 d-flex flex-column flex-lg-row gap-4 align-items-center justify-content-between w-100">
-          {/* <div className="d-flex flex-column flex-lg-row algin-items-center gap-1">
-            <img src={logo2} alt="" />
-          </div> */}
-          <div className="d-flex flex-column gap-3">
-            <NavLink to={"/"}>
-              <img src={logo2} alt="" style={{ width: 120 }} />
-            </NavLink>
-            <div className="d-flex gap-2 align-items-center w-100 justify-content-evenly">
-              <a
-                href="https://twitter.com/swiftotc"
-                target={"_blank"}
-                rel="noreferrer"
-                className="footer-link"
+        <div className="container-lg d-flex flex-column gap-4">
+          <div className="footer-separator"></div>
+          <div className="container-lg px-0 d-flex flex-column flex-lg-row gap-4 align-items-center justify-content-between w-100">
+            <div className="d-flex flex-column gap-3 col-3">
+              <NavLink
+                to={"/"}
+                onClick={() => {
+                  window.scrollTo(0, 0);
+                }}
               >
-                <img
-                  src={twitterIcon}
-                  alt=""
-                  style={{ width: 20, height: 20 }}
-                />{" "}
-              </a>
-              <a
-                href="https://t.me/swiftotc_announcements"
-                target={"_blank"}
-                rel="noreferrer"
-                className="footer-link"
-              >
-                <img
-                  src={telegramIcon}
-                  alt=""
-                  style={{ width: 20, height: 20 }}
-                />
-              </a>
-              <a
-                href="https://medium.com/@swiftotc"
-                target={"_blank"}
-                rel="noreferrer"
-                className="footer-link"
-              >
-                <img
-                  src={mediumIcon}
-                  alt=""
-                  style={{ width: 20, height: 20 }}
-                />
-              </a>
+                <img src={logo2} alt="" style={{ height: 45 }} />
+              </NavLink>
+              <span className="text-white footer-desc">
+                A user-friendly, powerful and secure trading platform designed
+                to simplify and streamline the trading experience for
+                cryptocurrency enthusiasts.
+              </span>
+              <div className="d-flex gap-2 align-items-center w-100 justify-content-start">
+                <a
+                  href="https://twitter.com/swiftotc"
+                  target={"_blank"}
+                  rel="noreferrer"
+                  className="footer-link"
+                >
+                  <img
+                    src={twitterIcon}
+                    alt=""
+                    // style={{ width: 20, height: 20 }}
+                  />{" "}
+                </a>
+                <a
+                  href="https://t.me/swiftotc_announcements"
+                  target={"_blank"}
+                  rel="noreferrer"
+                  className="footer-link"
+                >
+                  <img
+                    src={telegramIcon}
+                    alt=""
+                    // style={{ width: 20, height: 20 }}
+                  />
+                </a>
+                <a
+                  href="https://medium.com/@swiftotc"
+                  target={"_blank"}
+                  rel="noreferrer"
+                  className="footer-link"
+                >
+                  <img
+                    src={mediumIcon}
+                    alt=""
+                    // style={{ width: 20, height: 20 }}
+                  />
+                </a>
+              </div>
+            </div>
+            <div className="d-flex align-items-start gap-2 justify-content-between custom-width">
+              <div className="d-flex flex-column gap-2">
+                <h3 className="footer-title">Solutions</h3>
+                <NavLink to={"/buying"} className="footer-link">
+                  Buy
+                </NavLink>
+                <NavLink to={"/selling"} className="footer-link">
+                  Sell
+                </NavLink>
+                <NavLink to={"/open-positions"} className="footer-link">
+                  Open positions
+                </NavLink>
+              </div>
+              <div className="d-flex flex-column gap-2">
+                <h3 className="footer-title">Support</h3>
+                <NavLink to={"/support"} className="footer-link">
+                  Support
+                </NavLink>
+                <NavLink to={"/#faq"} className="footer-link">
+                  FAQ
+                </NavLink>
+              </div>
+              <div className="d-flex flex-column gap-2">
+                <h3 className="footer-title">
+                  Live Data<div className="pulsatingDot"></div>
+                </h3>
+                <div className="d-flex align-items-center gap-1">
+                  <img src={ethIcon} alt="" width={20} />{" "}
+                  <span className="footer-link text-white">
+                    $ {getFormattedNumber(ethPrice)}
+                  </span>
+                </div>
+                <div className="d-flex align-items-center gap-1">
+                  <img src={bnbIcon} alt="" width={20} />{" "}
+                  <span className="footer-link text-white">
+                    $ {getFormattedNumber(bnbPrice)}
+                  </span>
+                </div>
+                <div className="d-flex align-items-center gap-1">
+                  <span className="footer-link text-white">
+                    <img src={ordersIcon} alt="" />
+                    Total Orders: {getFormattedNumber(orders, 0)}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
-          <div className="d-flex align-items-start gap-2 justify-content-between custom-width">
-            <div className="d-flex flex-column gap-2">
-              <h3 className="footer-title">Solutions</h3>
-              <NavLink to={"/buying"} className="footer-link">
-                Buying
-              </NavLink>
-              <NavLink to={"/selling"} className="footer-link">
-                Selling
-              </NavLink>
-              <NavLink to={"/open-positions"} className="footer-link">
-                Open positions
-              </NavLink>
-            </div>
-            <div className="d-flex flex-column gap-2">
-              <h3 className="footer-title">Support</h3>
-              <NavLink to={"/support"} className="footer-link">
-                Support
-              </NavLink>
-              <NavLink to={"/#faq"} className="footer-link">
-                FAQ
-              </NavLink>
-            </div>
-            <div className="d-flex flex-column gap-2">
-              <h3 className="footer-title">
-                Live Data<div className="pulsatingDot"></div>
-              </h3>
-              <div className="d-flex align-items-center gap-1">
-                <img src={ethIcon} alt="" />{" "}
-                <span className="footer-link text-white">
-                  $ {getFormattedNumber(ethPrice)}
-                </span>
-              </div>
-              <div className="d-flex align-items-center gap-1">
-                <img src={bnbIcon} alt="" />{" "}
-                <span className="footer-link text-white">
-                  $ {getFormattedNumber(bnbPrice)}
-                </span>
-              </div>
-              <div className="d-flex align-items-center gap-1">
-                <span className="footer-link text-white">Orders: {orders}</span>
-              </div>
-            </div>
+          <div>
+            <span className="copyrightTxt d-flex align-items-center gap-2">
+              Audited By:
+              <img src={certik} alt="" height={30} />
+            </span>
           </div>
+          <span className="w-100 d-flex align-items-center justify-content-center copyrightTxt">
+            Copyright © {year} SwiftOTC. All Rights Reserved.{" "}
+          </span>
         </div>
       </footer>
     </div>

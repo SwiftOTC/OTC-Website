@@ -1,25 +1,33 @@
+@font-face {
+  font-family: "Organetto";
+  src: url("./fonts/Organetto.ttf");
+}
+
 body {
-    background: url(./assets/png/bg2.jpg) no-repeat center center fixed;
-    background-size: cover;
+  background: linear-gradient(180deg, #191c2f 0%, #141b3f 100%);
+}
+
+.font-organetto {
+  font-family: "Organetto" !important;
 }
 
 * {
-    font-family: "Poppins", sans-serif !important;
-  }
+  font-family: "Poppins", sans-serif !important;
+}
 
 .allroutes-wrapper {
-    padding-bottom: 9em;
-  }
- 
-  html {
-    scroll-behavior: smooth;
+  padding-bottom: 9em;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 .whole-wrapper {
-    position: relative;
-    min-height: 100vh;
+  position: relative;
+  min-height: 100vh;
+  justify-content: space-between;
 }
-
 
 ::-webkit-scrollbar {
   width: 5px;
@@ -32,7 +40,7 @@ body {
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: #7e3455;
+  background: #0c3572;
   border-radius: 8px;
 }
 

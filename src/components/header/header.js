@@ -9,6 +9,7 @@ import DropdownButton from "react-bootstrap/DropdownButton";
 import eth from "./assets/eth.svg";
 import bnb from "./assets/bnb.svg";
 import error from "./assets/error.svg";
+import whiteWallet from './assets/whiteWallet.svg' 
 
 const Header = ({
   isConnected,
@@ -88,14 +89,14 @@ const Header = ({
           </NavLink>
         </div>
         <div className="">
-          <div className="d-flex align-items-center gap-2">
+          <div className="d-flex align-items-center gap-4">
             <NavLink
               to="/buying"
               className={({ isActive }) =>
                 isActive ? " activenavlink" : "inactive-navlink"
               }
             >
-              Buying
+              Buy
             </NavLink>
             <NavLink
               to="/selling"
@@ -103,7 +104,7 @@ const Header = ({
                 isActive ? " activenavlink" : "inactive-navlink"
               }
             >
-              Selling
+              Sell
             </NavLink>
             <NavLink
               to="/open-positions"
@@ -175,8 +176,8 @@ const Header = ({
                 </button>
               </div>
             ) : (
-              <button className="connect-btn btn" onClick={onConnect}>
-                Connect wallet
+              <button className="connect-btn btn d-flex align-items-center gap-1" onClick={onConnect}>
+               <img src={whiteWallet} alt='' /> Connect wallet
               </button>
             )}
           </div>

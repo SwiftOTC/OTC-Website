@@ -1,0 +1,7 @@
+.otc-ribbon-wrapper {
+    background: url('./assets/otcGray.svg');
+    mix-blend-mode: overlay;
+    min-height: 190px;
+    opacity: 0.45;
+    background-position: center top;
+}

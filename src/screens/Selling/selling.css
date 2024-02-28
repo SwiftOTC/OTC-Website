@@ -10,9 +10,6 @@
   padding: 20px;
   border-radius: 8px;
   border: 1px solid #b8b8e0;
-  backdrop-filter: blur(12.5px);
-  box-shadow: 0 5px 4px 0 #671ae426;
-  filter: drop-shadow(0 4px 20px #7e3455);
 }
 
 .balance-text {
