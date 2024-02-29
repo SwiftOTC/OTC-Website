@@ -213,6 +213,12 @@ async function connectWallet() {
   }
 }
 
+async function disconnectWallet() {
+  window.coinbase_address = "0x0000000000000000000000000000000000000000";
+  console.log(window.coinbase_address);
+  return window.coinbase_addres;
+}
+
 window.cached_contracts = Object.create(null);
 
 async function getCoinbase() {

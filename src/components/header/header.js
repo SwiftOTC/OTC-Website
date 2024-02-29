@@ -9,7 +9,11 @@ import DropdownButton from "react-bootstrap/DropdownButton";
 import eth from "./assets/eth.svg";
 import bnb from "./assets/bnb.svg";
 import error from "./assets/error.svg";
-import whiteWallet from './assets/whiteWallet.svg' 
+import whiteWallet from "./assets/whiteWallet.svg";
+import OutsideClickHandler from "react-outside-click-handler";
+import copy from "./assets/copy.svg";
+import check from "./assets/check.svg";
+import logout from "./assets/logout.svg";
 
 const Header = ({
   isConnected,
@@ -17,10 +21,13 @@ const Header = ({
   onConnect,
   chainId,
   onSwitchNetwork,
+  manageDisconnect,
 }) => {
   const [balance, setUserBalance] = useState(0);
   const [ethState, setEthState] = useState(false);
   const [bnbState, setBnbState] = useState(false);
+  const [showmenu, setShowMenu] = useState(false);
+  const [tooltip, setTooltip] = useState(false);
 
   const getUserBalance = async () => {
     if (isConnected && coinbase) {
@@ -120,11 +127,15 @@ const Header = ({
           <div className="d-flex align-items-center gap-2">
             {isConnected && (
               <DropdownButton
-                id="dropdown-basic-button"
+                id={
+                  chainId !== 1 && chainId !== 56
+                    ? "dropdown-basic-button-error"
+                    : "dropdown-basic-button"
+                }
                 style={{ width: "124px" }}
                 className="d-flex align-items-center justify-content-center"
                 title={
-                  <span className="dropdown-title">
+                  <span className={"dropdown-title"}>
                     <div className="d-flex align-items-center gap-1">
                       <img
                         src={
@@ -138,7 +149,13 @@ const Header = ({
                         width={16}
                         alt=""
                       />
-                      <span className="change-chain-text d-none d-lg-flex">
+                      <span
+                        className={
+                          chainId !== 1 && chainId !== 56
+                            ? "dropdown-title-error d-none d-lg-flex"
+                            : "dropdown-title d-none d-lg-flex"
+                        }
+                      >
                         {ethState === true
                           ? "Ethereum"
                           : bnbState === true
@@ -152,33 +169,84 @@ const Header = ({
                 }
               >
                 <Dropdown.Item onClick={() => onSwitchNetwork("0x1")}>
-                  <img src={eth} alt="" className="me-1" style={{width: 15, height: 15}}/>
+                  <img
+                    src={eth}
+                    alt=""
+                    className="me-1"
+                    style={{ width: 15, height: 15 }}
+                  />
                   Ethereum
                 </Dropdown.Item>
                 <Dropdown.Item onClick={() => onSwitchNetwork("0x38")}>
-                  <img src={bnb} alt=""className="me-1" style={{width: 15, height: 15}}/>
+                  <img
+                    src={bnb}
+                    alt=""
+                    className="me-1"
+                    style={{ width: 15, height: 15 }}
+                  />
                   BNB Chain
                 </Dropdown.Item>
               </DropdownButton>
             )}
             {isConnected ? (
-              <div className="d-flex align-items-center">
-                {chainId === 1 || chainId === 56 ? (
+              <div className="d-flex align-items-center gap-2">
+                {(chainId === 1 || chainId === 56) && (
                   <div className="balance-wrapper2">
                     {getFormattedNumber(balance, 2)}{" "}
                     {chainId === 1 ? "ETH" : "BNB"}
                   </div>
-                ) : (
-                  <div className="balance-wrapper2">Unsupported Chain</div>
                 )}
-                <button className="btn-connected btn">
+                <button
+                  className="balance-wrapper2"
+                  onClick={() => {
+                    setShowMenu(true);
+                  }}
+                >
                   {shortAddress(coinbase)}
                 </button>
               </div>
             ) : (
-              <button className="connect-btn btn d-flex align-items-center gap-1" onClick={onConnect}>
-               <img src={whiteWallet} alt='' /> Connect wallet
+              <button
+                className="connect-btn btn d-flex align-items-center gap-1"
+                onClick={onConnect}
+              >
+                <img src={whiteWallet} alt="" /> Connect wallet
               </button>
+            )}
+            {showmenu === true && (
+              <div className="position-absolute" style={{ width: "210px" }}>
+                <OutsideClickHandler
+                  onOutsideClick={() => {
+                    setShowMenu(false);
+                  }}
+                >
+                  <div className="menuwrapper">
+                    <div className="d-flex flex-column gap-2">
+                      <span
+                        className="menuitem2"
+                        onClick={() => {
+                          navigator.clipboard.writeText(coinbase);
+                          setTooltip(true);
+                          setTimeout(() => setTooltip(false), 2000);
+                        }}
+                      >
+                        {shortAddress(coinbase)}{" "}
+                        <img src={tooltip ? check : copy} alt="" />
+                      </span>
+
+                      <span
+                        className="menuitem2"
+                        onClick={() => {
+                          setShowMenu(false);
+                          manageDisconnect();
+                        }}
+                      >
+                        <img src={logout} alt="" /> Disconnect{" "}
+                      </span>
+                    </div>
+                  </div>
+                </OutsideClickHandler>
+              </div>
             )}
           </div>
         </div>

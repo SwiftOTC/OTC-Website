@@ -13,7 +13,7 @@ import Selling from "./screens/Selling/Selling";
 import Support from "./screens/Support/Support";
 import { handleSwitchNetworkhook } from "./hooks/switchNetwork";
 import "./fonts/Organetto.ttf";
-import OTCRibbon from "./components/otcRibbon/otcRibbon";
+import WalletModal from "./components/WalletModal/WalletModal";
 
 function App() {
   const [coinbase, setCoinbase] = useState();
@@ -42,6 +42,8 @@ function App() {
   const [openSlice, setOpenSlice] = useState(20);
 
   const [totalOrders, settotalOrders] = useState(0);
+  const [walletModal, setWalletModal] = useState(false);
+
 
   const logout = localStorage.getItem("logout");
   const dataFetchedRef = useRef(false);
@@ -50,12 +52,23 @@ function App() {
   const handleConnect = async () => {
     await window.connectWallet().then(() => {
       setIsConnected(true);
+      setWalletModal(false);
     });
 
     await window.getCoinbase().then((data) => {
       localStorage.setItem("logout", "false");
       setCoinbase(data);
     });
+  };
+
+  const handleDisconnect = async () => {
+    if (!window.gatewallet) {
+      await window.disconnectWallet();
+      localStorage.setItem("logout", "true");
+      // setSuccess(false);
+      setCoinbase();
+      setIsConnected(false);
+    }
   };
 
   const handleCollectedPage = (e, value) => {
@@ -1826,7 +1839,7 @@ function App() {
   useEffect(() => {
     if (dataFetchedRef2.current) return;
     dataFetchedRef2.current = true;
-    getActivityOrders(20);
+    // getActivityOrders(20);
   }, []);
 
   useEffect(() => {
@@ -1845,16 +1858,17 @@ function App() {
       <Header
         isConnected={isConnected}
         coinbase={coinbase}
-        onConnect={handleConnect}
+        onConnect={()=>{setWalletModal(true)}}
         chainId={chainId}
         onSwitchNetwork={(value) => {
           handleSwitchNetworkhook(value);
         }}
+        manageDisconnect={handleDisconnect}
       />
       <MobileHeader
         isConnected={isConnected}
         coinbase={coinbase}
-        onConnect={handleConnect}
+        onConnect={()=>{setWalletModal(true)}}
         chainId={chainId}
         onSwitchNetwork={(value) => {
           handleSwitchNetworkhook(value);
@@ -1870,7 +1884,7 @@ function App() {
                 isConnected={isConnected}
                 coinbase={coinbase}
                 isAdmin={isAdmin}
-                onConnect={handleConnect}
+                onConnect={()=>{setWalletModal(true)}}
                 chainId={chainId}
                 activityArray={activityArray2}
                 onCreateOrderSuccess={() => {
@@ -1891,7 +1905,7 @@ function App() {
                 isConnected={isConnected}
                 coinbase={coinbase}
                 isAdmin={isAdmin}
-                onConnect={handleConnect}
+                onConnect={()=>{setWalletModal(true)}}
                 chainId={chainId}
                 openOrdersArray={openOrdersArray}
                 activityArray={activityArray}
@@ -1913,7 +1927,7 @@ function App() {
                 isConnected={isConnected}
                 coinbase={coinbase}
                 isAdmin={isAdmin}
-                onConnect={handleConnect}
+                onConnect={()=>{setWalletModal(true)}}
                 chainId={chainId}
                 openOrdersArray={openOrdersArray}
                 completedOrdersArray={completedOrdersArray}
@@ -1936,7 +1950,7 @@ function App() {
                 isConnected={isConnected}
                 coinbase={coinbase}
                 isAdmin={isAdmin}
-                onConnect={handleConnect}
+                onConnect={()=>{setWalletModal(true)}}
                 chainId={chainId}
                 openOrdersArray={openOrdersArray}
                 completedOrdersArray={completedOrdersArray}
@@ -1969,7 +1983,7 @@ function App() {
                 isConnected={isConnected}
                 coinbase={coinbase}
                 isAdmin={isAdmin}
-                onConnect={handleConnect}
+                onConnect={()=>{setWalletModal(true)}}
                 chainId={chainId}
                 openOrdersArray={openOrdersArray}
                 completedOrdersArray={completedOrdersArray}
@@ -1997,6 +2011,17 @@ function App() {
 
           <Route exact path="/support" element={<Support />} />
         </Routes>
+        {walletModal === true && (
+        <WalletModal
+          show={walletModal}
+          handleClose={() => {
+            setWalletModal(false);
+          }}
+          handleConnection={() => {
+            handleConnect();
+          }}
+        />
+      )}
       </div>
       <Footer orders={totalOrders} />
     </div>

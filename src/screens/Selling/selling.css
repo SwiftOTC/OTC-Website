@@ -1,31 +1,64 @@
 .sell-input {
-  border: none;
-  outline: none;
-  padding: 10px;
-  border-radius: 10px;
+  border-radius: 8px;
+  border: 1px solid #8e97cd;
+  padding: 11px 10px;
+  background: transparent;
+  color: #c0cbf7;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  letter-spacing: -0.216px;
 }
 
 .input-wrappers {
-  background: rgb(19, 19, 19);
+  border-radius: 10px;
+  background: #181c30;
+  box-shadow: 0px 4px 13px 0px rgba(50, 183, 234, 0.2);
   padding: 20px;
-  border-radius: 8px;
-  border: 1px solid #b8b8e0;
+  border: none !important;
 }
 
 .balance-text {
-  font-size: 14px;
-  color: #fff;
+  color: #c0cbf7;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 12px;
+  letter-spacing: -0.216px;
 }
 
 .max-btn {
-  padding: 5px;
-  border-radius: 8px;
+  padding: 5px 15px;
   border: none;
   outline: none;
-  background: #fff;
-  color: #7e3455;
-  border: 1px solid #7e3455;
+  border-radius: 6px;
+  border: 1px solid #41d8e7;
+  color: #41d8e7;
   font-size: 12px;
+  right: 10px;
+  z-index: 33;
+  top: 6px;
+}
+
+.max-btn-disabled {
+  padding: 5px 15px;
+  border: none;
+  outline: none;
+  border-radius: 6px;
+  border: 1px solid #41d8e7 !important;
+  color: #41d8e7 !important;
+  font-size: 12px;
+  opacity: 0.3;
+  pointer-events: none;
+  right: 10px;
+  z-index: 33;
+  top: 6px;
+}
+
+.max-btn:hover {
+  background: #41d8e7;
+  color: #fff;
 }
 
 .balance-wrapper {
@@ -41,8 +74,9 @@
 
 .MuiFormLabel-root,
 .MuiInputLabel-root {
-  color: #7e3455 !important;
-  background: rgb(19, 19, 19) !important;
+  color: #8E97CD !important;
+  background: transparent !important;
+  font-size: 12px !important;
 }
 
 .tokenlogo {
@@ -53,10 +87,11 @@
 .MuiInputBase-root,
 .MuiOutlinedInput-root,
 .MuiSelect-root {
-  border: 1px solid #7e3455 !important;
-  color: #7e3455 !important;
-  font-weight: 500 !important;
+  border: 1px solid #8E97CD !important;
+  color: #C0CBF7 !important;
+  font-weight: 400 !important;
   border-radius: 8px !important;
+  font-size: 12px !important;
 }
 
 .MuiSelect-select,
@@ -104,5 +139,4 @@
   .max-btn {
     font-size: 12px;
   }
-
 }
