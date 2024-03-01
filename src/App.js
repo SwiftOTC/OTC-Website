@@ -4,13 +4,11 @@ import Listing from "./screens/Listing/Listing";
 import { Routes } from "react-router-dom";
 import { Route } from "react-router-dom";
 import Header from "./components/header/header";
-import Web3 from "web3";
 import Footer from "./components/footer/footer";
 import MobileHeader from "./components/mobileHeader/mobileHeader";
 import Buying from "./screens/Buying/Buying";
 import Homepage from "./screens/Homepage/Homepage";
-import Selling from "./screens/Selling/Selling";
-import Support from "./screens/Support/Support";
+import Selling from "./screens/Selling/Selling"; 
 import { handleSwitchNetworkhook } from "./hooks/switchNetwork";
 import "./fonts/Organetto.ttf";
 import WalletModal from "./components/WalletModal/WalletModal";
@@ -2009,7 +2007,7 @@ function App() {
             }
           />
 
-          <Route exact path="/support" element={<Support />} />
+           
         </Routes>
         {walletModal === true && (
         <WalletModal

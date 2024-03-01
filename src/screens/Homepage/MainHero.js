@@ -25,7 +25,7 @@ const MainHero = () => {
               simplify and streamline the trading experience for cryptocurrency
               enthusiasts.
             </h6>
-            <NavLink className="mainHero-buybtn col-2" to="/buying">
+            <NavLink className="mainHero-buybtn col-lg-2 col-5" to="/buying">
               Buy
             </NavLink>
           </div>

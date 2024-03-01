@@ -48,9 +48,9 @@ const MobileHeader = ({
         className="mobile-navbar d-flex d-lg-none p-3 align-items-center justify-content-between"
         id="mobileNavbar"
       >
-        {/* <NavLink to="/"> */}
+        <NavLink to="/">
           <img src={logo} alt="logo" width={126} />
-        {/* </NavLink> */}
+        </NavLink>
         <div className="d-flex align-items-center gap-3 justify-content-between">
           {isConnected && (
             <DropdownButton
@@ -143,7 +143,7 @@ const MobileHeader = ({
               style={{ textDecoration: "none" }}
               onClick={() => setOpenNavbar(false)}
             >
-              <h6 className="mobile-nav-link font-poppins mb-0">Buying</h6>
+              <h6 className="mobile-nav-link font-poppins mb-0">Buy</h6>
               <img src={mobileArrow} alt="arrow" />{" "}
             </NavLink>
           </div>
@@ -154,7 +154,7 @@ const MobileHeader = ({
               style={{ textDecoration: "none" }}
               onClick={() => setOpenNavbar(false)}
             >
-              <h6 className="mobile-nav-link font-poppins mb-0">Selling</h6>
+              <h6 className="mobile-nav-link font-poppins mb-0">Sell</h6>
               <img src={mobileArrow} alt="arrow" />{" "}
             </NavLink>
           </div>

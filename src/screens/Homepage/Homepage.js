@@ -26,7 +26,7 @@ const Homepage = ({
     }
   };
   return (
-    <div className="d-flex flex-column container-fluid px-lg-0">
+    <div className="d-flex flex-column container-fluid px-0">
       <MainHero />
       <OTCRibbon />
       <TrustedContainer />

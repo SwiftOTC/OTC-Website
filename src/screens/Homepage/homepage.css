@@ -216,10 +216,45 @@
   line-height: normal;
 }
 
+.slick-slider {
+  width: 100% !important;
+}
+
 @media only screen and (max-width: 991px) {
   .mainheroImg {
     display: none;
   }
+
+  .faqitem-title,.quicktitle-faq {
+    font-family: "Poppins" !important;
+    font-weight: 600;
+    font-size: 18px;
+  }
+
+
+  .quicktitle, .mainhero-title {
+    font-size: 20px;
+    line-height: 30px;
+  }
+  .main-hero-desc,.card-desc,.faq-desc {
+    font-size: 12px;
+  }
+  .mainHero-buybtn {
+    padding: 5px 0px;
+    font-size: 16px;
+  }
+  .bottom-text-dexc,.card-title, .placeorder-title {
+    font-size: 16px;
+  }
+
+  .otc-bottom-blue-wrapper {
+    padding: 20px;
+  }
+
+  .numberImg {
+    width: 36px;
+  }
+
   .cards-wrapper,
   .cards-upper-container-wrapper {
     display: grid;
@@ -228,7 +263,14 @@
   }
   .mainhero-wrapper {
     min-height: 420px;
+    margin-top: 6em;
+    justify-content: start;
   }
+
+  .otherpages-wrapper {
+    margin-top: 6em;
+  }
+
   h1 {
     font-size: 25px;
   }

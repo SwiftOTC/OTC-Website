@@ -66,7 +66,7 @@ const Faq = () => {
         </h1>
       </div>
       <div className="otc-bottom-blue-wrapper customwrapper">
-        <div className="container-lg">
+        <div className="container-lg px-0">
           <div className="d-grid">
             <Accordion
               expanded={expanded === "panel1"}

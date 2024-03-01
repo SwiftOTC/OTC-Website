@@ -1,9 +1,10 @@
-import React from "react";
+import React, {useEffect, useRef} from "react";
 import "./homepage.css";
-
 import one from "./assets/one.svg";
 import two from "./assets/two.svg";
 import three from "./assets/three.svg";
+import useWindowSize from "../../hooks/useWindowSize";
+import Slider from "react-slick";
 
 const TrustedContainer = () => {
   const otcBenefits = [
@@ -24,6 +25,23 @@ const TrustedContainer = () => {
       desc: "SwiftOTC acts as an intermediary to keep your transactions anonymous towards OTC dealers.",
     },
   ];
+  const windowSize = useWindowSize();
+  const sliderRef = useRef();
+  const settings = {
+    dots: false,
+    arrows: true,
+    infinite: true,
+    autoplay: true,
+    autoplaySpeed: 6000,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    // dotsClass: "button__bar",
+  };
+
+  useEffect(()=>{
+    sliderRef?.current?.innerSlider.slickGoTo(0)
+  },[sliderRef])
 
   return (
     <div className="container-fluid faq-wrapper my-5">
@@ -41,6 +59,7 @@ const TrustedContainer = () => {
                 We take care of everything else
               </span>
             </div>
+
             <div className="cards-upper-container-wrapper">
               {otcBenefits.map((item, index) => {
                 return (
@@ -67,43 +86,85 @@ const TrustedContainer = () => {
                   SWIFTOTC
                 </mark>
               </h1>
+              {windowSize.width > 991 ? (
+                <div className="cards-wrapper align-items-center">
+                  <div className="trust-card-wrapper p-3">
+                    <div className="d-flex flex-column gap-2 align-items-center">
+                      <img src={one} alt="" />
+                      <h3 className="card-title font-organetto">
+                        Be Protected
+                      </h3>
+                      <span className="card-desc text-white text-center">
+                        SwiftOTC shields DeFi traders from unpredictable market
+                        turbulence, ensuring a user-friendly peer-to-peer
+                        trading experience.
+                      </span>
+                    </div>
+                  </div>
+                  <div className="trust-card-wrapper p-3">
+                    <div className="d-flex flex-column gap-2 align-items-center">
+                      <img src={two} alt="" />
 
-              <div className="cards-wrapper align-items-center">
-                <div className="trust-card-wrapper p-3">
-                  <div className="d-flex flex-column gap-2 align-items-center">
-                    <img src={one} alt="" />
-                    <h3 className="card-title font-organetto">Be Protected</h3>
-                    <span className="card-desc text-white text-center">
-                      SwiftOTC shields DeFi traders from unpredictable market
-                      turbulence, ensuring a user-friendly peer-to-peer trading
-                      experience.
-                    </span>
+                      <h3 className="card-title font-organetto">Quiet Exit</h3>
+                      <span className="card-desc text-white text-center">
+                        Effortlessly exit your position by conducting a quiet
+                        token sale to a trusted partner while also maximizing
+                        returns.
+                      </span>
+                    </div>
+                  </div>
+                  <div className="trust-card-wrapper p-3">
+                    <div className="d-flex flex-column gap-2 align-items-center">
+                      <img src={three} alt="" />
+
+                      <h3 className="card-title font-organetto">Cut Costs</h3>
+                      <span className="card-desc text-white text-center">
+                        Trade Directly with Users, Bypass Charts and Liquidity
+                        Pools.
+                      </span>
+                    </div>
                   </div>
                 </div>
-                <div className="trust-card-wrapper p-3">
-                  <div className="d-flex flex-column gap-2 align-items-center">
-                    <img src={two} alt="" />
-
-                    <h3 className="card-title font-organetto">Quiet Exit</h3>
-                    <span className="card-desc text-white text-center">
-                      Effortlessly exit your position by conducting a quiet
-                      token sale to a trusted partner while also maximizing
-                      returns.
-                    </span>
+              ) : (
+                <Slider {...settings} ref={sliderRef}>
+                  <div className="trust-card-wrapper p-3">
+                    <div className="d-flex flex-column gap-2 align-items-center">
+                      <img src={one} alt="" />
+                      <h3 className="card-title font-organetto">
+                        Be Protected
+                      </h3>
+                      <span className="card-desc text-white text-center">
+                        SwiftOTC shields DeFi traders from unpredictable market
+                        turbulence, ensuring a user-friendly peer-to-peer
+                        trading experience.
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <div className="trust-card-wrapper p-3">
-                  <div className="d-flex flex-column gap-2 align-items-center">
-                    <img src={three} alt="" />
+                  <div className="trust-card-wrapper p-3">
+                    <div className="d-flex flex-column gap-2 align-items-center">
+                      <img src={two} alt="" />
 
-                    <h3 className="card-title font-organetto">Cut Costs</h3>
-                    <span className="card-desc text-white text-center">
-                      Trade Directly with Users, Bypass Charts and Liquidity
-                      Pools.
-                    </span>
+                      <h3 className="card-title font-organetto">Quiet Exit</h3>
+                      <span className="card-desc text-white text-center">
+                        Effortlessly exit your position by conducting a quiet
+                        token sale to a trusted partner while also maximizing
+                        returns.
+                      </span>
+                    </div>
                   </div>
-                </div>
-              </div>
+                  <div className="trust-card-wrapper p-3">
+                    <div className="d-flex flex-column gap-2 align-items-center">
+                      <img src={three} alt="" />
+
+                      <h3 className="card-title font-organetto">Cut Costs</h3>
+                      <span className="card-desc text-white text-center">
+                        Trade Directly with Users, Bypass Charts and Liquidity
+                        Pools.
+                      </span>
+                    </div>
+                  </div>
+                </Slider>
+              )}
             </div>
           </div>
         </div>

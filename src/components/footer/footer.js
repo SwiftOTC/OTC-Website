@@ -73,7 +73,7 @@ const Footer = ({ orders }) => {
         <div className="container-lg d-flex flex-column gap-4">
           <div className="footer-separator"></div>
           <div className="container-lg px-0 d-flex flex-column flex-lg-row gap-4 align-items-center justify-content-between w-100">
-            <div className="d-flex flex-column gap-3 col-3">
+            <div className="d-flex flex-column gap-3 col-lg-3">
               <NavLink
                 to={"/"}
                 onClick={() => {
@@ -126,7 +126,7 @@ const Footer = ({ orders }) => {
                 </a>
               </div>
             </div>
-            <div className="d-flex align-items-start gap-2 justify-content-between custom-width">
+            <div className="d-flex align-items-start gap-3 justify-content-between custom-width">
               <div className="d-flex flex-column gap-2">
                 <h3 className="footer-title">Solutions</h3>
                 <NavLink to={"/buying"} className="footer-link">
@@ -141,9 +141,15 @@ const Footer = ({ orders }) => {
               </div>
               <div className="d-flex flex-column gap-2">
                 <h3 className="footer-title">Support</h3>
-                <NavLink to={"/support"} className="footer-link">
+                <a
+                  href="mailto:support@swiftotc.io"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="footer-link"
+                >
                   Support
-                </NavLink>
+                </a>
+
                 <NavLink to={"/#faq"} className="footer-link">
                   FAQ
                 </NavLink>

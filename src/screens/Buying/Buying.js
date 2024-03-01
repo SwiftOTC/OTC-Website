@@ -271,7 +271,7 @@ const Buying = ({
   }, []);
 
   return (
-    <div className="container-fluid">
+    <div className="container-fluid px-0 otherpages-wrapper">
       <div className="d-flex flex-column gap-5 align-items-center">
         <div className="d-flex flex-column justify-content-center align-items-center mt-5">
           <h1 className="text-white font-organetto mainhero-title m-0">
@@ -287,7 +287,7 @@ const Buying = ({
         <div className="listing-wrapper-homepage container-fluid mb-5 d-flex justify-content-center">
           <div className="want-to-sell-wrapper col-lg-4 mt-5 mb-5">
             <div className="d-flex flex-column gap-3 input-wrappers">
-              <div className="d-flex align-items-center justify-content-between gap-2 w-100">
+              <div className="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-2 w-100">
                 <div className="d-flex align-items-center gap-2">
                   <img src={chart} alt="" />
                   <span className="placeorder-title">SwiftOTC Buy</span>

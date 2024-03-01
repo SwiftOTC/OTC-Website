@@ -8,7 +8,7 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import { shortAddress } from "../../hooks/shortAddress";
 import getFormattedNumber from "../../hooks/get-formatted-number";
-import RiseLoader from "react-spinners/RiseLoader";
+import FadeLoader from "react-spinners/FadeLoader";
 import Pagination from "@mui/material/Pagination";
 import linkIcon from "./assets/linkIcon.svg";
 
@@ -203,7 +203,7 @@ const Activity = ({
                       </Table>
                       {loading === true && (
                         <div className="d-flex w-100 justify-content-center mt-5">
-                          <RiseLoader
+                          <FadeLoader
                             color={"#41D8E7"}
                             loading={loading}
                             cssOverride={override}
