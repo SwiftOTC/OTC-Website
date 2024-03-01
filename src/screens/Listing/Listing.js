@@ -17,6 +17,8 @@ import linkIcon from "./assets/linkIcon.svg";
 import FadeLoader from "react-spinners/FadeLoader";
 import { NavLink, useLocation } from "react-router-dom";
 import OTCRibbon from "../../components/otcRibbon/otcRibbon";
+import { Checkbox, FormControlLabel, FormGroup } from "@mui/material";
+import indicator from "../../assets/svg/indicator.svg";
 
 const Listing = ({
   isAdmin,
@@ -46,8 +48,13 @@ const Listing = ({
   const [finalizeStatus, setFinalizeStatus] = useState("initial");
   const [selectedOrder, setSelectedOrder] = useState();
   const [selectedOrderObject, setSelectedOrderObject] = useState();
+  const [selectedOrderObjectArray, setSelectedOrderObjectArray] = useState([]);
+  const [selectedOrderObjectArrayFinal, setselectedOrderObjectArrayFinal] =
+    useState([]);
 
   const [showModal, setShowModal] = useState(false);
+  const [multiSelect, setmultiSelect] = useState(false);
+
   const { BigNumber } = window;
   const location = useLocation();
 
@@ -231,6 +238,40 @@ const Listing = ({
       });
   };
 
+  const handleSetArrayFinal = (data) => {
+    setselectedOrderObjectArrayFinal(data);
+  };
+
+  const addTags = (tag) => {
+    let tagArray = selectedOrderObjectArray;
+    if (tagArray.includes(tag)) {
+      const index = tagArray.indexOf(tag);
+      tagArray.splice(index, 1);
+    } else {
+      tagArray.push(tag);
+    }
+    const uniqueArray = completedOrdersArray.filter(({ orderId: id1 }) =>
+      tagArray.some((item) => id1 === item)
+    );
+
+    handleSetArrayFinal(uniqueArray);
+    setSelectedOrderObjectArray(tagArray);
+  };
+
+  const handleManageSelectOrder = (order) => {
+    if (multiSelect) {
+      setSelectedOrder(order.orderId);
+      addTags(order.orderId);
+      // setselectedOrderObjectArrayFinal(order);
+    } else {
+      setSelectedOrder(order.orderId);
+      addTags(order.orderId);
+      setselectedOrderObjectArrayFinal([order]);
+      checkApproval(order, order.chain);
+      setShowModal(true);
+    }
+  };
+
   useEffect(() => {
     setSelectedItem("open");
     window.scrollTo(0, 0);
@@ -270,65 +311,6 @@ const Listing = ({
                   }}
                 >
                   <span>Open orders</span>
-                  {/* <div
-                      class="dropdown position relative"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}
-                    >
-                      <button
-                        class={`btn launchpad-dropdown p-1 d-flex gap-1 justify-content-between align-items-center dropdown-toggle2 w-100`}
-                        type="button"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false"
-                      >
-                        <div
-                          className="d-flex align-items-center gap-2"
-                          style={{ color: "#fff" }}
-                        >
-                          {chainId === 1 ? (
-                            <img
-                              src={require(`../../assets/svg/eth.svg`).default}
-                              alt=""
-                            />
-                          ) : (
-                            <img
-                              src={require(`../../assets/svg/bnb.svg`).default}
-                              alt=""
-                            />
-                          )}
-                        </div>
-                        <img src={indicator} alt="" />
-                      </button>
-                      <ul class="dropdown-menu w-100">
-                        <li
-                          className="dropdown-item launchpad-item d-flex align-items-center gap-2"
-                          onClick={() => {
-                            onSwitchNetwork("0x1");
-                          }}
-                        >
-                          {" "}
-                          <img
-                            src={require(`../../assets/svg/eth.svg`).default}
-                            alt=""
-                          />{" "}
-                          Ethereum
-                        </li>
-                        <li
-                          className="dropdown-item launchpad-item d-flex align-items-center gap-2"
-                          onClick={() => {
-                            onSwitchNetwork("0x38");
-                          }}
-                        >
-                          <img
-                            src={require(`../../assets/svg/bnb.svg`).default}
-                            alt=""
-                          />
-                          BNB Chain
-                        </li>
-                      </ul>
-                    </div> */}
                 </div>
                 {/* {isAdmin && (
                     <div
@@ -446,7 +428,64 @@ const Listing = ({
                       >
                         <TableHead>
                           <TableRow>
-                            <TableCell scope="row">Chain</TableCell>
+                            <TableCell scope="row">
+                              <span className="d-flex align-items-center">
+                                Chain
+                                {selectedItem === "open" &&
+                                  openOrdersArray &&
+                                  loading === false &&
+                                  openOrdersArray.length > 0 && (
+                                    <div
+                                      class="dropdown position relative"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                      }}
+                                    >
+                                      <button
+                                        class={`btn launchpad-dropdown p-1 d-flex gap-1 justify-content-between align-items-center dropdown-toggle2`}
+                                        type="button"
+                                        data-bs-toggle="dropdown"
+                                        aria-expanded="false"
+                                      >
+                                        <img src={indicator} alt="" />
+                                      </button>
+                                      <ul class="dropdown-menu w-100">
+                                        <li
+                                          className="dropdown-item launchpad-item d-flex align-items-center gap-2"
+                                          onClick={() => {
+                                            onSwitchNetwork("0x1");
+                                          }}
+                                        >
+                                          <img
+                                            src={
+                                              require(`../../assets/svg/eth.svg`)
+                                                .default
+                                            }
+                                            alt=""
+                                          />{" "}
+                                          Ethereum
+                                        </li>
+                                        <li
+                                          className="dropdown-item launchpad-item d-flex align-items-center gap-2"
+                                          onClick={() => {
+                                            onSwitchNetwork("0x38");
+                                          }}
+                                        >
+                                          <img
+                                            src={
+                                              require(`../../assets/svg/bnb.svg`)
+                                                .default
+                                            }
+                                            alt=""
+                                          />
+                                          BNB Chain
+                                        </li>
+                                      </ul>
+                                    </div>
+                                  )}
+                              </span>
+                            </TableCell>
                             <TableCell align="center" scope="row">
                               Seller
                             </TableCell>
@@ -1002,22 +1041,50 @@ const Listing = ({
                                     coinbase.toLowerCase() !==
                                       item.seller.toLowerCase() ? (
                                       <button
-                                        className="connect-btn py-1 smallfont btn col-lg-9"
+                                        className={`${
+                                          ((multiSelect &&
+                                            selectedOrderObjectArray.length ===
+                                              0) ||
+                                            (multiSelect &&
+                                              selectedOrderObjectArray.length >
+                                                0 &&
+                                              !selectedOrderObjectArray.includes(
+                                                item.orderId
+                                              ))) &&
+                                          "select-btn"
+                                        } ${
+                                          multiSelect &&
+                                          selectedOrderObjectArray.length > 0 &&
+                                          selectedOrderObjectArray.includes(
+                                            item.orderId
+                                          ) &&
+                                          "select-btn-active"
+                                        } ${
+                                          !multiSelect && "connect-btn"
+                                        }   py-1 smallfont col-lg-9`}
                                         onClick={() => {
                                           // handleAcceptOrder(item.orderId);
-                                          setSelectedOrder(item.orderId);
-                                          setSelectedOrderObject(item);
-                                          checkApproval(item, item.chain);
-                                          setShowModal(true);
+                                          handleManageSelectOrder(item);
                                         }}
                                       >
-                                        Accept
+                                        {multiSelect
+                                          ? selectedOrderObjectArray.length ===
+                                            0
+                                            ? "Select"
+                                            : selectedOrderObjectArray.length >
+                                                0 &&
+                                              selectedOrderObjectArray.includes(
+                                                item.orderId
+                                              )
+                                            ? "Selected"
+                                            : "Select"
+                                          : "Accept"}
                                       </button>
                                     ) : coinbase &&
                                       coinbase.toLowerCase() ===
                                         item.seller.toLowerCase() ? (
                                       <button
-                                        className="connect-btn smallfont btn col-lg-12"
+                                        className="connect-btn smallfont btn col-lg-9 py-1"
                                         onClick={() => {
                                           handleCancelOrder(
                                             item.orderId,
@@ -1047,7 +1114,7 @@ const Listing = ({
                                       </button>
                                     ) : (
                                       <button
-                                        className="connect-btn smallfont btn col-lg-12"
+                                        className="connect-btn smallfont btn  col-lg-9 py-1"
                                         onClick={() => {
                                           onConnect();
                                         }}
@@ -1261,7 +1328,54 @@ const Listing = ({
                   )}
 
                   {selectedItem === "open" && (
-                    <div className="col-12 d-flex bg-transparent py-1 justify-content-end align-items-end">
+                    <div className="col-12 d-flex bg-transparent py-1 justify-content-between align-items-center">
+                      <div
+                        className="d-flex gap-1 align-items-center"
+                        onClick={() => {
+                          setmultiSelect(!multiSelect);
+                        }}
+                        style={{ cursor: "pointer" }}
+                      >
+                        <FormGroup>
+                          <FormControlLabel
+                            onChange={() => {
+                              setmultiSelect(!multiSelect);
+                            }}
+                            classes={"text-danger"}
+                            control={
+                              <Checkbox
+                                size="small"
+                                checked={multiSelect}
+                                sx={{
+                                  color: "#828FBB",
+                                  "&.Mui-checked": {
+                                    color: "#3DBDA7",
+                                  },
+                                }}
+                              />
+                            }
+                          />
+                        </FormGroup>
+                        <span
+                          className={
+                            multiSelect ? "checkboxtxt-active" : "checkboxtxt"
+                          }
+                        >
+                          MultiSelect
+                        </span>
+                      </div>
+                      {selectedOrderObjectArray.length > 0 && (
+                        <button
+                          className={
+                            "connect-btn py-1 px-4 smallfont custom-width-btn"
+                          }
+                          onClick={() => {
+                            setShowModal(true);
+                          }}
+                        >
+                          Accept
+                        </button>
+                      )}
                       <Pagination
                         color="primary"
                         // variant="outlined"
@@ -1306,7 +1420,7 @@ const Listing = ({
             </div>
           </div>
         </div>
-        <OTCRibbon/>
+        <OTCRibbon />
       </div>
       {showModal && (
         <Modal
@@ -1332,65 +1446,69 @@ const Listing = ({
               </div>
 
               <div className="d-flex flex-column gap-4">
-                <div className="confirm-summary-wrapper p-3">
-                  <div className="d-flex flex-column gap-2">
-                    <div className="d-flex justify-content-between gap-2 align-items-center">
-                      <span className="leftText">Token</span>
-                      <span className="rightText d-flex align-items-center gap-2">
-                        {/* {shortAddress(selectedOrderObject.tokenToSell)}*/}
-                        {selectedOrderObject.tokenToSellSymbol}
-                        <a
-                          href={
-                            selectedOrderObject.chain === 1
-                              ? `https://etherscan.io/token/${selectedOrderObject.tokenToSell}`
-                              : `https://bscscan.com/token/${selectedOrderObject.tokenToSell}`
-                          }
-                          target="_blank"
-                          rel="noreferrer"
-                          style={{ color: "#41D8E7" }}
-                          className="d-flex align-items-center gap-2 justify-content-center"
-                        >
-                          <img src={linkIcon} alt="" />{" "}
-                          {/* {selectedOrderObject.tokenToSellSymbol} */}
-                        </a>
-                      </span>
-                    </div>
-                    <div className="d-flex justify-content-between gap-2 align-items-center">
-                      <span className="leftText">Buying</span>
-                      <span className="rightText">
-                        {getFormattedNumber(
-                          selectedOrderObject.amountToSell /
-                            10 ** selectedOrderObject.tokenToSellDecimals
-                        )}{" "}
-                        ({selectedOrderObject.tokenToSellSymbol})
-                      </span>
-                    </div>
-                    <div className="d-flex justify-content-between gap-2 align-items-center">
-                      <span className="leftText">Spending</span>
-                      <span className="rightText">
-                        {getFormattedNumber(
-                          selectedOrderObject.amountToBuy /
-                            10 ** selectedOrderObject.tokenToBuyDecimals
-                        )}{" "}
-                        ({selectedOrderObject.tokenToBuySymbol})
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                {selectedOrderObjectArrayFinal &&
+                  selectedOrderObjectArrayFinal.length > 0 &&
+                  selectedOrderObjectArrayFinal.map((item, index) => {
+                    return (
+                      <div className="confirm-summary-wrapper p-3" key={index}>
+                        <div className="d-flex flex-column gap-2">
+                          <div className="d-flex justify-content-between gap-2 align-items-center">
+                            <span className="leftText">Token</span>
+                            <span className="rightText d-flex align-items-center gap-2">
+                              {item.tokenToSellSymbol}
+                              <a
+                                href={
+                                  item.chain === 1
+                                    ? `https://etherscan.io/token/${item.tokenToSell}`
+                                    : `https://bscscan.com/token/${item.tokenToSell}`
+                                }
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{ color: "#41D8E7" }}
+                                className="d-flex align-items-center gap-2 justify-content-center"
+                              >
+                                <img src={linkIcon} alt="" />{" "}
+                              </a>
+                            </span>
+                          </div>
+                          <div className="d-flex justify-content-between gap-2 align-items-center">
+                            <span className="leftText">Buying</span>
+                            <span className="rightText">
+                              {getFormattedNumber(
+                                item.amountToSell /
+                                  10 ** item.tokenToSellDecimals
+                              )}{" "}
+                              ({item.tokenToSellSymbol})
+                            </span>
+                          </div>
+                          <div className="d-flex justify-content-between gap-2 align-items-center">
+                            <span className="leftText">Spending</span>
+                            <span className="rightText">
+                              {getFormattedNumber(
+                                item.amountToBuy / 10 ** item.tokenToBuyDecimals
+                              )}{" "}
+                              ({item.tokenToBuySymbol})
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+
                 <div className="d-flex align-items-center gap-4 justify-content-between">
                   <button
-                    onClick={() => {
-                      acceptStatus === "buy"
-                        ? handleAcceptOrder(
-                            selectedOrderObject.orderId,
-                            selectedOrderObject,
-                            selectedOrderObject.chain
-                          )
-                        : handleApproveOrder(
-                            selectedOrderObject,
-                            selectedOrderObject.chain
-                          );
-                    }}
+                    // onClick={() => {
+                    //   acceptStatus === "buy"
+                    //     ? handleAcceptOrder(
+                    //         selectedOrderObject.orderId,
+                    //         selectedOrderObject,
+                    //         selectedOrderObject.chain
+                    //       )
+                    //     : handleApproveOrder(
+                    //         selectedOrderObject,
+                    //         selectedOrderObject.chain
+                    //       );
+                    // }}
                     className="connect-btn py-1 m-auto w-50"
                   >
                     {acceptStatus === "initial"

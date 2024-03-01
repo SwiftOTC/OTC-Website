@@ -9,13 +9,13 @@
 
 .listing-single-item {
   border-radius: 4px;
-background: #303A63;
-color: #FFF;
-text-align: center;
-font-size: 16px;
-font-style: normal;
-font-weight: 500;
-line-height: 17px;
+  background: #303a63;
+  color: #fff;
+  text-align: center;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 17px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -29,8 +29,8 @@ line-height: 17px;
 .active-item {
   cursor: pointer;
   border-radius: 4px;
-  background: #0D91C3;
-  color: #FFF;
+  background: #0d91c3;
+  color: #fff;
   text-align: center;
   font-size: 16px;
   font-style: normal;
@@ -39,6 +39,57 @@ line-height: 17px;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.checkboxtxt {
+  color: #828fbb;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+  text-transform: capitalize;
+}
+
+.select-btn {
+  border-radius: 20px;
+border: 1px solid #41D8E7;
+background: #303A63;
+color: #FFF;
+text-align: center;
+font-size: 14px;
+font-style: normal;
+font-weight: 500;
+line-height: normal;
+letter-spacing: 0.7px;
+text-transform: capitalize;
+}
+
+.select-btn-active {
+  border-radius: 20px;
+  background: linear-gradient(263deg, #41D8E7 0%, #00A1AF 100%);
+color: #232846;
+text-align: center;
+font-size: 14px;
+font-style: normal;
+font-weight: 500;
+line-height: normal;
+letter-spacing: 0.7px;
+text-transform: capitalize;
+border: 1px solid #41D8E7;
+}
+
+.checkboxtxt-active {
+  color: #41D8E7;
+font-size: 14px;
+font-style: normal;
+font-weight: 500;
+line-height: normal;
+text-transform: capitalize;
+
+}
+
+.MuiFormControlLabel-root {
+  margin-right: 0 !important;
 }
 
 .MuiTableContainer-root {
@@ -62,10 +113,9 @@ line-height: 17px;
   color: #fff !important;
 }
 
-
-.MuiTableHead-root,.MuiTableCell-stickyHeader {
+.MuiTableHead-root,
+.MuiTableCell-stickyHeader {
   background: #232846 !important;
- 
 }
 
 .MuiTableCell-head {
@@ -144,7 +194,7 @@ line-height: 17px;
 }
 
 .label-text {
-  color: #FFF;
+  color: #fff;
   text-align: center;
   font-size: 14px;
   font-style: normal;
@@ -159,19 +209,19 @@ line-height: 17px;
   display: flex;
   flex-direction: column;
   border-radius: 20px;
-  border: 1px solid #828FBB;
+  border: 1px solid #828fbb;
   background: #232846;
 }
 
 .confirm-summary-wrapper {
   border-radius: 15px;
-border: 1px solid #A5ABBD;
-background: rgba(21, 24, 40, 0.10);
-backdrop-filter: blur(10px);
+  border: 1px solid #a5abbd;
+  background: rgba(21, 24, 40, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 .leftText {
-  color: #828FBB;
+  color: #828fbb;
   font-size: 14px;
   font-style: normal;
   font-weight: 500;
@@ -179,7 +229,7 @@ backdrop-filter: blur(10px);
 }
 
 .rightText {
-  color: #FFF;
+  color: #fff;
   text-align: right;
   font-size: 14px;
   font-style: normal;
