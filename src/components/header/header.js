@@ -98,7 +98,7 @@ const Header = ({
         <div className="">
           <div className="d-flex align-items-center gap-4">
             <NavLink
-              to="/buying"
+              to="/buy"
               className={({ isActive }) =>
                 isActive ? " activenavlink" : "inactive-navlink"
               }
@@ -106,7 +106,7 @@ const Header = ({
               Buy
             </NavLink>
             <NavLink
-              to="/selling"
+              to="/sell"
               className={({ isActive }) =>
                 isActive ? " activenavlink" : "inactive-navlink"
               }

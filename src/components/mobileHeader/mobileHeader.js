@@ -138,7 +138,7 @@ const MobileHeader = ({
         >
           <div className="mobile-nav-item d-flex align-items-center justify-content-between p-3">
             <NavLink
-              to="/buying"
+              to="/buy"
               className="nav-anchor font-poppins d-flex align-items-center justify-content-between w-100"
               style={{ textDecoration: "none" }}
               onClick={() => setOpenNavbar(false)}
@@ -149,7 +149,7 @@ const MobileHeader = ({
           </div>
           <div className="mobile-nav-item d-flex align-items-center justify-content-between p-3">
             <NavLink
-              to="/selling"
+              to="/sell"
               className="nav-anchor font-poppins d-flex align-items-center justify-content-between w-100"
               style={{ textDecoration: "none" }}
               onClick={() => setOpenNavbar(false)}

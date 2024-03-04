@@ -129,10 +129,10 @@ const Footer = ({ orders }) => {
             <div className="d-flex align-items-start gap-3 justify-content-between custom-width">
               <div className="d-flex flex-column gap-2">
                 <h3 className="footer-title">Solutions</h3>
-                <NavLink to={"/buying"} className="footer-link">
+                <NavLink to={"/buy"} className="footer-link">
                   Buy
                 </NavLink>
-                <NavLink to={"/selling"} className="footer-link">
+                <NavLink to={"/sell"} className="footer-link">
                   Sell
                 </NavLink>
                 <NavLink to={"/open-positions"} className="footer-link">

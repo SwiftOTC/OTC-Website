@@ -1897,7 +1897,7 @@ function App() {
           />
           <Route
             exact
-            path="/selling"
+            path="/sell"
             element={
               <Selling
                 isConnected={isConnected}
@@ -1919,7 +1919,7 @@ function App() {
 
           <Route
             exact
-            path="/buying"
+            path="/buy"
             element={
               <Buying
                 isConnected={isConnected}
