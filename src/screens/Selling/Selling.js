@@ -185,9 +185,10 @@ const Selling = ({
       tokenAmount * 10 ** tokenDecimals
     ).toFixed(0);
 
-    console.log(tokenAddress, tokenAmount2, selectedToken, price2);
+    const allowedBuyer = selectedStatus === 'public' ? window.config.zero_address : destinationWallet
+
     await otc_contract.methods
-      .createOrder(tokenAddress, tokenAmount2, selectedToken, price2)
+      .createOrder(tokenAddress, tokenAmount2, selectedToken, price2,allowedBuyer)
       .send({ from: coinbase })
       .then(() => {
         setListLoading(false);
@@ -661,7 +662,7 @@ const Selling = ({
                     tokenAddress !== undefined &&
                     tokenAmount !== undefined &&
                     pricetoSell !== undefined &&
-                    selectedToken !== undefined
+                    selectedToken !== undefined && selectedStatus!==''
                       ? false
                       : true
                   }

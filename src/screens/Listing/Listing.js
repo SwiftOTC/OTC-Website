@@ -64,7 +64,7 @@ const Listing = ({
     borderColor: "#32B7EA",
   };
 
-  const handleAcceptOrder = async (orderId, obj, chain) => {
+  const handleAcceptOrder = async (obj, chain) => {
     const web3 = new Web3(window.ethereum);
     setAcceptStatus("loading");
     const otc_sc =
@@ -77,8 +77,14 @@ const Listing = ({
       from: undefined,
     });
 
+    let orderIds = [];
+
+    obj.forEach((item) => {
+      orderIds.push(item.orderId);
+    });
+
     await otc_contract.methods
-      .acceptOrder(orderId)
+      .bulkBuyOrders(orderIds)
       .send({ from: coinbase })
       .then(() => {
         console.log("success");
@@ -103,11 +109,21 @@ const Listing = ({
   const handleApproveOrder = async (obj, chain) => {
     const web3 = new Web3(window.ethereum);
     setAcceptStatus("loading-approve");
+    console.log(obj);
     const tokenToBuyContract = new web3.eth.Contract(
       window.TOKEN_ABI,
-      obj.tokenToBuy
+      obj[0].tokenToBuy
     );
-    const amountToBuy = obj.amountToBuy;
+    let amountToBuy = 0;
+    obj.forEach((item) => {
+      const price = new BigNumber(
+        item.amountToBuy / 10 ** item.tokenToBuyDecimals
+      ).toFixed();
+      amountToBuy += Number(price);
+    });
+
+    const amountToBuy_formatted = new BigNumber(amountToBuy * 1e18).toFixed();
+
     const otc_sc =
       chain === 1
         ? window.config.otc_address
@@ -116,7 +132,7 @@ const Listing = ({
         : "";
 
     await tokenToBuyContract.methods
-      .approve(otc_sc, amountToBuy)
+      .approve(otc_sc, amountToBuy_formatted)
       .send({ from: coinbase })
       .then(() => {
         console.log("success-approve");
@@ -140,35 +156,45 @@ const Listing = ({
     const web3 = new Web3(window.ethereum);
     const tokenToBuyContract = new web3.eth.Contract(
       window.TOKEN_ABI,
-      obj.tokenToBuy
+      obj[0].tokenToBuy
     );
-    const amountToBuy = obj.amountToBuy;
-    const otc_sc =
-      chain === 1
-        ? window.config.otc_address
-        : chain === 56
-        ? window.config.otc_bnb_address
-        : "";
+    let amountToBuy = 0;
+    obj.forEach((item) => {
+      const price = new BigNumber(
+        item.amountToBuy / 10 ** item.tokenToBuyDecimals
+      ).toFixed();
+      amountToBuy += Number(price);
+    });
 
-    const result = await tokenToBuyContract.methods
-      .allowance(coinbase, otc_sc)
-      .call()
-      .then((data) => {
-        return data;
-      })
-      .catch((e) => {
-        console.log(e);
-      });
+    const amountToBuy_formatted = new BigNumber(amountToBuy * 1e18).toFixed();
+    if (chain) {
+      const otc_sc =
+        chain === 1
+          ? window.config.otc_address
+          : chain === 56
+          ? window.config.otc_bnb_address
+          : "";
 
-    let result_formatted = new BigNumber(result).toFixed(6);
+      const result = await tokenToBuyContract.methods
+        .allowance(coinbase, otc_sc)
+        .call()
+        .then((data) => {
+          return data;
+        })
+        .catch((e) => {
+          console.log(e);
+        });
 
-    if (
-      Number(result_formatted) >= Number(amountToBuy) &&
-      Number(result_formatted) !== 0
-    ) {
-      setAcceptStatus("buy");
-    } else {
-      setAcceptStatus("initial");
+      let result_formatted = new BigNumber(result).toFixed(6);
+
+      if (
+        Number(result_formatted) >= Number(amountToBuy_formatted) &&
+        Number(result_formatted) !== 0
+      ) {
+        setAcceptStatus("buy");
+      } else {
+        setAcceptStatus("initial");
+      }
     }
   };
 
@@ -206,37 +232,6 @@ const Listing = ({
         }, 3000);
       });
   };
-  const handleFinalizeOrder = async (orderId, tokenDecimalsToBuy, chain) => {
-    const web3 = new Web3(window.ethereum);
-    setFinalizeStatus("loading");
-    const otc_sc =
-      chain === 1
-        ? window.config.otc_address
-        : chain === 56
-        ? window.config.otc_bnb_address
-        : "";
-
-    const otc_contract = new web3.eth.Contract(window.OTC_ABI, otc_sc);
-
-    await otc_contract.methods
-      .finalizeOrder(orderId, tokenDecimalsToBuy)
-      .send({ from: coinbase })
-      .then(() => {
-        console.log("success");
-        setFinalizeStatus("success");
-        setTimeout(() => {
-          setFinalizeStatus("initial");
-        }, 2000);
-        onAcceptOrderComplete();
-      })
-      .catch((e) => {
-        console.error(e);
-        setFinalizeStatus("error");
-        setTimeout(() => {
-          setFinalizeStatus("initial");
-        }, 3000);
-      });
-  };
 
   const handleSetArrayFinal = (data) => {
     setselectedOrderObjectArrayFinal(data);
@@ -250,12 +245,26 @@ const Listing = ({
     } else {
       tagArray.push(tag);
     }
-    const uniqueArray = completedOrdersArray.filter(({ orderId: id1 }) =>
+    const uniqueArray = openOrdersArray.filter(({ orderId: id1 }) =>
       tagArray.some((item) => id1 === item)
     );
 
     handleSetArrayFinal(uniqueArray);
     setSelectedOrderObjectArray(tagArray);
+
+    if (uniqueArray && uniqueArray.length > 0) {
+      checkApproval(uniqueArray, uniqueArray[0].chain);
+    }
+  };
+
+  const addTags2 = (tag) => {
+    const uniqueArray = openOrdersArray.filter((item) => {
+      return tag === item.orderId;
+    });
+
+    handleSetArrayFinal(uniqueArray);
+    setSelectedOrderObjectArray(uniqueArray);
+    checkApproval(uniqueArray, uniqueArray.chain);
   };
 
   const handleManageSelectOrder = (order) => {
@@ -265,9 +274,9 @@ const Listing = ({
       // setselectedOrderObjectArrayFinal(order);
     } else {
       setSelectedOrder(order.orderId);
-      addTags(order.orderId);
+      addTags2(order.orderId);
       setselectedOrderObjectArrayFinal([order]);
-      checkApproval(order, order.chain);
+      checkApproval([order], order.chain);
       setShowModal(true);
     }
   };
@@ -311,6 +320,17 @@ const Listing = ({
                   }}
                 >
                   <span>Open orders</span>
+                </div>
+                <div
+                  className={`listing-single-item d-flex align-items-center gap-1 col-lg-2 py-2 px-3  ${
+                    selectedItem === "private" && "active-item"
+                  } `}
+                  onClick={() => {
+                    setSelectedItem("private");
+                    onOpenClick(20);
+                  }}
+                >
+                  <span>Private orders</span>
                 </div>
                 {/* {isAdmin && (
                     <div
@@ -431,10 +451,9 @@ const Listing = ({
                             <TableCell scope="row">
                               <span className="d-flex align-items-center">
                                 Chain
-                                {selectedItem === "open" &&
-                                  openOrdersArray &&
-                                  loading === false &&
-                                  openOrdersArray.length > 0 && (
+                                {(selectedItem === "open" ||
+                                  selectedItem === "private") &&
+                                  loading === false && (
                                     <div
                                       class="dropdown position relative"
                                       onClick={(e) => {
@@ -515,179 +534,6 @@ const Listing = ({
                           </TableRow>
                         </TableHead>
                         <TableBody>
-                          {/* {selectedItem === "pending" &&
-                        isAdmin &&
-                        pendingOrdersArray &&
-                        loading === false &&
-                        pendingOrdersArray.length > 0 &&
-                        pendingOrdersArray.map((item, index) => {
-                          return (
-                            <TableRow
-                              key={index}
-                              sx={{
-                                "&:last-child td, &:last-child th": {
-                                  border: 0,
-                                },
-                              }}
-                            >
-                             
-                              <TableCell align="center">
-                                <div
-                                  className={
-                                    item.chain === 1
-                                      ? "label-wrapper-eth position-absolute p-0 bg-transparent"
-                                      : "label-wrapper-bnb position-absolute p-0 bg-transparent"
-                                  }
-                                >
-                                  {item.chain === 1 ? (
-                                    <img
-                                      src={
-                                        require("./assets/tageth.svg").default
-                                      }
-                                      alt=""
-                                    />
-                                  ) : (
-                                    <img
-                                      src={
-                                        require("./assets/tagbnb.svg").default
-                                      }
-                                      alt=""
-                                    />
-                                  )}
-                                </div>
-                                <a
-                                  href={
-                                    item.chain === 1
-                                      ? `https://etherscan.io/address/${item.seller}`
-                                      : `https://bscscan.com/address/${item.seller}`
-                                  }
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  style={{ color: "#7e3455" }}
-                                >
-                                  {shortAddress(item.seller)}
-                                </a>
-                              </TableCell>
-                              <TableCell align="center">
-                                <a
-                                  href={
-                                    item.chain === 1
-                                      ? `https://etherscan.io/address/${item.buyer}`
-                                      : `https://bscscan.com/address/${item.buyer}`
-                                  }
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  style={{ color: "#7e3455" }}
-                                >
-                                  {shortAddress(item.buyer)}
-                                </a>
-                              </TableCell>
-                              <TableCell align="center">
-                                <a
-                                  href={
-                                    item.chain === 1
-                                      ? `https://etherscan.io/token/${item.tokenToSell}`
-                                      : `https://bscscan.com/token/${item.tokenToSell}`
-                                  }
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  style={{ color: "#7e3455" }}
-                                >
-                                  {shortAddress(item.tokenToSell)} (
-                                  {item.tokenToSellSymbol})
-                                </a>
-                              </TableCell>
-                              <TableCell align="center">
-                                {getFormattedNumber(
-                                  item.amountToSell /
-                                    10 ** item.tokenToSellDecimals
-                                )}
-                              </TableCell>
-                              <TableCell align="center">
-                                <a
-                                  href={
-                                    item.chain === 1
-                                      ? `https://etherscan.io/token/${item.tokenToBuy}`
-                                      : `https://bscscan.com/token/${item.tokenToBuy}`
-                                  }
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  style={{ color: "#7e3455" }}
-                                >
-                                  {shortAddress(item.tokenToBuy)} (
-                                  {item.tokenToBuySymbol})
-                                </a>
-                              </TableCell>
-                              <TableCell align="center">
-                                {getFormattedNumber(
-                                  item.amountToBuy /
-                                    10 ** item.tokenToBuyDecimals
-                                )}
-                                <div
-                                  className={
-                                    item.status === "0"
-                                      ? "label-wrapper position-absolute"
-                                      : item.status === "1"
-                                      ? "label-wrapper-bought position-absolute"
-                                      : "label-wrapper-completed position-absolute"
-                                  }
-                                >
-                                  <span className={"label-text"}>
-                                    {item.status === "0"
-                                      ? "Placed"
-                                      : item.status === "1"
-                                      ? "Bought"
-                                      : "Completed"}
-                                  </span>
-                                </div>
-                              </TableCell>
-                              <TableCell align="center">
-                                <button
-                                  className="connect-btn smallfont btn col-lg-12"
-                                  onClick={() => {
-                                    handleFinalizeOrder(
-                                      item.orderId,
-                                      item.tokenToBuyDecimals,
-                                      item.chain
-                                    );
-                                    setSelectedOrder(item.orderId);
-                                  }}
-                                >
-                                  {acceptStatus === "initial" ||
-                                  selectedOrder !== item.orderId ? (
-                                    "Complete Order"
-                                  ) : acceptStatus === "success" &&
-                                    selectedOrder === item.orderId ? (
-                                    "Success"
-                                  ) : acceptStatus === "error" &&
-                                    selectedOrder === item.orderId ? (
-                                    "Failed!"
-                                  ) : (
-                                    <>
-                                      Completeing{" "}
-                                      <div
-                                        class="mx-0 spinner-border spinner-border-sm text-light"
-                                        role="status"
-                                      ></div>
-                                    </>
-                                  )}
-                                </button>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })} */}
-                          {/* {selectedItem === "pending" &&
-                        isAdmin &&
-                        loading === false &&
-                        pendingOrdersArray &&
-                        pendingOrdersArray.length === 0 && (
-                          <div className="empty-div-wrapper py-5">
-                            <span className="text-white">
-                              No pending orders, check back later
-                            </span>
-                          </div>
-                        )} */}
-
                           {selectedItem === "completed" &&
                             completedOrdersArray &&
                             loading === false &&
@@ -877,263 +723,454 @@ const Listing = ({
                             openOrdersArray &&
                             loading === false &&
                             openOrdersArray.length > 0 &&
-                            openOrdersArray.map((item, index) => {
-                              return (
-                                <TableRow
-                                  key={index}
-                                  sx={{
-                                    "&:last-child td, &:last-child th": {
-                                      border: 0,
-                                    },
-                                  }}
-                                >
-                                  {/* <TableCell component="th" scope="row">
-                                {item.tokenToSellSymbol}
-                              </TableCell> */}
-                                  {/* <TableCell align="center">
-                              <a
-                                href={`https://etherscan.io/address/${item.buyer}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                style={{ color: "#7e3455" }}
-                              >
-                                {shortAddress(item.buyer)}
-                              </a>
-                            </TableCell> */}
-                                  <TableCell align="center">
-                                    {/* <div
-                                      className={
-                                        item.chain === 1
-                                          ? "label-wrapper-eth position-absolute p-0 bg-transparent"
-                                          : "label-wrapper-bnb position-absolute p-0 bg-transparent"
-                                      }
-                                    >
-                                      {item.chain === 1 ? (
-                                        <img
-                                          src={
-                                            require("./assets/tageth.svg")
-                                              .default
-                                          }
-                                          alt=""
-                                        />
-                                      ) : (
-                                        <img
-                                          src={
-                                            require("./assets/tagbnb.svg")
-                                              .default
-                                          }
-                                          alt=""
-                                        />
-                                      )}
-                                    </div>
-                                    <a
-                                      href={
-                                        item.chain === 1
-                                          ? `https://etherscan.io/address/${item.seller}`
-                                          : `https://bscscan.com/address/${item.seller}`
-                                      }
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      style={{ color: "#7e3455" }}
-                                    >
-                                      {shortAddress(item.seller)}
-                                    </a> */}
-                                    <div>
-                                      {item.chain === 1 ? (
-                                        <span className="text-white d-flex align-items-center gap-2">
-                                          <img
-                                            src={
-                                              require("./assets/tageth.svg")
-                                                .default
-                                            }
-                                            alt=""
-                                          />
-                                          Ethereum
-                                        </span>
-                                      ) : (
-                                        <span className="text-white d-flex align-items-center gap-2">
-                                          <img
-                                            src={
-                                              require("./assets/tagbnb.svg")
-                                                .default
-                                            }
-                                            alt=""
-                                          />
-                                          BNB Chain
-                                        </span>
-                                      )}
-                                    </div>
-                                  </TableCell>
-                                  <TableCell align="center">
-                                    {/* <a
-                                      href={
-                                        item.chain === 1
-                                          ? `https://etherscan.io/token/${item.tokenToSell}`
-                                          : `https://bscscan.com/token/${item.tokenToSell}`
-                                      }
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      style={{ color: "#7e3455" }}
-                                    >
-                                      {shortAddress(item.tokenToSell)} (
-                                      {item.tokenToSellSymbol})
-                                    </a> */}
-                                    <a
-                                      href={
-                                        item.chain === 1
-                                          ? `https://etherscan.io/address/${item.seller}`
-                                          : `https://bscscan.com/address/${item.seller}`
-                                      }
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      style={{ color: "#41D8E7" }}
-                                    >
-                                      {shortAddress(item.seller)}
-                                    </a>
-                                  </TableCell>
-                                  <TableCell align="center">
-                                    {/* {getFormattedNumber(
-                                      item.amountToSell /
-                                        10 ** item.tokenToSellDecimals
-                                    )} */}
-                                    <a
-                                      href={
-                                        item.chain === 1
-                                          ? `https://etherscan.io/token/${item.tokenToSell}`
-                                          : `https://bscscan.com/token/${item.tokenToSell}`
-                                      }
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      style={{ color: "#41D8E7" }}
-                                      className="d-flex align-items-center gap-2 justify-content-center"
-                                    >
-                                      <img src={linkIcon} alt="" />
-                                      {getFormattedNumber(
-                                        item.amountToSell /
-                                          10 ** item.tokenToSellDecimals
-                                      )}{" "}
-                                      {item.tokenToSellSymbol}
-                                    </a>
-                                  </TableCell>
-                                  <TableCell align="center">
-                                    <a
-                                      href={
-                                        item.chain === 1
-                                          ? `https://etherscan.io/token/${item.tokenToBuy}`
-                                          : `https://bscscan.com/token/${item.tokenToBuy}`
-                                      }
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      style={{ color: "#41D8E7" }}
-                                      className="d-flex align-items-center gap-2 justify-content-center"
-                                    >
-                                      <img src={linkIcon} alt="" />
-                                      {getFormattedNumber(
-                                        item.amountToBuy /
-                                          10 ** item.tokenToBuyDecimals
-                                      )}{" "}
-                                      {item.tokenToBuySymbol}
-                                    </a>
-                                  </TableCell>
-
-                                  <TableCell align="center">
-                                    {coinbase &&
-                                    coinbase.toLowerCase() !==
-                                      item.seller.toLowerCase() ? (
-                                      <button
-                                        className={`${
-                                          ((multiSelect &&
-                                            selectedOrderObjectArray.length ===
-                                              0) ||
-                                            (multiSelect &&
-                                              selectedOrderObjectArray.length >
-                                                0 &&
-                                              !selectedOrderObjectArray.includes(
-                                                item.orderId
-                                              ))) &&
-                                          "select-btn"
-                                        } ${
-                                          multiSelect &&
-                                          selectedOrderObjectArray.length > 0 &&
-                                          selectedOrderObjectArray.includes(
-                                            item.orderId
-                                          ) &&
-                                          "select-btn-active"
-                                        } ${
-                                          !multiSelect && "connect-btn"
-                                        }   py-1 smallfont col-lg-9`}
-                                        onClick={() => {
-                                          // handleAcceptOrder(item.orderId);
-                                          handleManageSelectOrder(item);
-                                        }}
-                                      >
-                                        {multiSelect
-                                          ? selectedOrderObjectArray.length ===
-                                            0
-                                            ? "Select"
-                                            : selectedOrderObjectArray.length >
-                                                0 &&
-                                              selectedOrderObjectArray.includes(
-                                                item.orderId
-                                              )
-                                            ? "Selected"
-                                            : "Select"
-                                          : "Accept"}
-                                      </button>
-                                    ) : coinbase &&
-                                      coinbase.toLowerCase() ===
-                                        item.seller.toLowerCase() ? (
-                                      <button
-                                        className="connect-btn smallfont btn col-lg-9 py-1"
-                                        onClick={() => {
-                                          handleCancelOrder(
-                                            item.orderId,
-                                            item.chain
-                                          );
-                                          setSelectedOrder(item.orderId);
-                                        }}
-                                      >
-                                        {acceptStatus === "initial" ||
-                                        selectedOrder !== item.orderId ? (
-                                          "Cancel order"
-                                        ) : acceptStatus === "success" &&
-                                          selectedOrder === item.orderId ? (
-                                          "Success"
-                                        ) : acceptStatus === "error" &&
-                                          selectedOrder === item.orderId ? (
-                                          "Failed!"
+                            openOrdersArray
+                              .filter((obj) => {
+                                return (
+                                  obj.allowedBuyer ===
+                                  window.config.zero_address
+                                );
+                              })
+                              .map((item, index) => {
+                                return (
+                                  <TableRow
+                                    key={index}
+                                    sx={{
+                                      "&:last-child td, &:last-child th": {
+                                        border: 0,
+                                      },
+                                    }}
+                                  >
+                                    <TableCell align="center">
+                                      <div>
+                                        {item.chain === 1 ? (
+                                          <span className="text-white d-flex align-items-center gap-2">
+                                            <img
+                                              src={
+                                                require("./assets/tageth.svg")
+                                                  .default
+                                              }
+                                              alt=""
+                                            />
+                                            Ethereum
+                                          </span>
                                         ) : (
-                                          <>
-                                            Canceling{" "}
-                                            <div
-                                              class="mx-0 spinner-border spinner-border-sm text-light"
-                                              role="status"
-                                            ></div>
-                                          </>
+                                          <span className="text-white d-flex align-items-center gap-2">
+                                            <img
+                                              src={
+                                                require("./assets/tagbnb.svg")
+                                                  .default
+                                              }
+                                              alt=""
+                                            />
+                                            BNB Chain
+                                          </span>
                                         )}
-                                      </button>
-                                    ) : (
-                                      <button
-                                        className="connect-btn smallfont btn  col-lg-9 py-1"
-                                        onClick={() => {
-                                          onConnect();
-                                        }}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell align="center">
+                                      <a
+                                        href={
+                                          item.chain === 1
+                                            ? `https://etherscan.io/address/${item.seller}`
+                                            : `https://bscscan.com/address/${item.seller}`
+                                        }
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        style={{ color: "#41D8E7" }}
                                       >
-                                        Connect Wallet
-                                      </button>
-                                    )}
-                                  </TableCell>
-                                </TableRow>
-                              );
-                            })}
+                                        {shortAddress(item.seller)}
+                                      </a>
+                                    </TableCell>
+                                    <TableCell align="center">
+                                      <a
+                                        href={
+                                          item.chain === 1
+                                            ? `https://etherscan.io/token/${item.tokenToSell}`
+                                            : `https://bscscan.com/token/${item.tokenToSell}`
+                                        }
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        style={{ color: "#41D8E7" }}
+                                        className="d-flex align-items-center gap-2 justify-content-center"
+                                      >
+                                        <img src={linkIcon} alt="" />
+                                        {getFormattedNumber(
+                                          item.amountToSell /
+                                            10 ** item.tokenToSellDecimals
+                                        )}{" "}
+                                        {item.tokenToSellSymbol}
+                                      </a>
+                                    </TableCell>
+                                    <TableCell align="center">
+                                      <a
+                                        href={
+                                          item.chain === 1
+                                            ? `https://etherscan.io/token/${item.tokenToBuy}`
+                                            : `https://bscscan.com/token/${item.tokenToBuy}`
+                                        }
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        style={{ color: "#41D8E7" }}
+                                        className="d-flex align-items-center gap-2 justify-content-center"
+                                      >
+                                        <img src={linkIcon} alt="" />
+                                        {getFormattedNumber(
+                                          item.amountToBuy /
+                                            10 ** item.tokenToBuyDecimals
+                                        )}{" "}
+                                        {item.tokenToBuySymbol}
+                                      </a>
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                      {coinbase &&
+                                      coinbase.toLowerCase() !==
+                                        item.seller.toLowerCase() ? (
+                                        <button
+                                          disabled={
+                                            selectedOrderObjectArrayFinal.length >
+                                              0 &&
+                                            selectedOrderObjectArrayFinal[0]
+                                              .tokenToBuySymbol !==
+                                              item.tokenToBuySymbol
+                                          }
+                                          className={`${
+                                            ((multiSelect &&
+                                              selectedOrderObjectArray.length ===
+                                                0) ||
+                                              (multiSelect &&
+                                                selectedOrderObjectArray.length >
+                                                  0 &&
+                                                !selectedOrderObjectArray.includes(
+                                                  item.orderId
+                                                ))) &&
+                                            "select-btn"
+                                          } ${
+                                            multiSelect &&
+                                            selectedOrderObjectArray.length >
+                                              0 &&
+                                            selectedOrderObjectArray.includes(
+                                              item.orderId
+                                            ) &&
+                                            "select-btn-active"
+                                          } ${
+                                            !multiSelect && "connect-btn"
+                                          }   py-1 smallfont col-lg-9`}
+                                          onClick={() => {
+                                            // handleAcceptOrder(item.orderId);
+                                            handleManageSelectOrder(item);
+                                          }}
+                                        >
+                                          {multiSelect
+                                            ? selectedOrderObjectArray.length ===
+                                              0
+                                              ? "Select"
+                                              : selectedOrderObjectArray.length >
+                                                  0 &&
+                                                selectedOrderObjectArray.includes(
+                                                  item.orderId
+                                                )
+                                              ? "Selected"
+                                              : "Select"
+                                            : "Accept"}
+                                        </button>
+                                      ) : coinbase &&
+                                        coinbase.toLowerCase() ===
+                                          item.seller.toLowerCase() ? (
+                                        <button
+                                          className="connect-btn smallfont btn col-lg-9 py-1"
+                                          onClick={() => {
+                                            handleCancelOrder(
+                                              item.orderId,
+                                              item.chain
+                                            );
+                                            setSelectedOrder(item.orderId);
+                                          }}
+                                        >
+                                          {acceptStatus === "initial" ||
+                                          selectedOrder !== item.orderId ? (
+                                            "Cancel order"
+                                          ) : acceptStatus === "success" &&
+                                            selectedOrder === item.orderId ? (
+                                            "Success"
+                                          ) : acceptStatus === "error" &&
+                                            selectedOrder === item.orderId ? (
+                                            "Failed!"
+                                          ) : (
+                                            <>
+                                              Canceling{" "}
+                                              <div
+                                                class="mx-0 spinner-border spinner-border-sm text-light"
+                                                role="status"
+                                              ></div>
+                                            </>
+                                          )}
+                                        </button>
+                                      ) : (
+                                        <button
+                                          className="connect-btn smallfont btn  col-lg-9 py-1"
+                                          onClick={() => {
+                                            onConnect();
+                                          }}
+                                        >
+                                          Connect Wallet
+                                        </button>
+                                      )}
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
 
                           {selectedItem === "open" &&
                             loading === false &&
                             openOrdersArray &&
-                            openOrdersArray.length === 0 && (
+                            (openOrdersArray.length === 0 ||
+                              openOrdersArray.filter((obj) => {
+                                return (
+                                  obj.allowedBuyer ===
+                                  window.config.zero_address
+                                );
+                              }).length === 0) && (
                               <div className="empty-div-wrapper py-5">
                                 <span className="text-white">
                                   No open orders, check back later
+                                </span>
+                              </div>
+                            )}
+
+                          {selectedItem === "private" &&
+                            openOrdersArray &&
+                            loading === false &&
+                            openOrdersArray.length > 0 &&
+                            openOrdersArray
+                              .filter((obj) => {
+                                return (
+                                  obj.allowedBuyer !==
+                                    window.config.zero_address &&
+                                  obj.allowedBuyer.toLowerCase() ===
+                                    coinbase?.toLowerCase()
+                                );
+                              })
+                              .map((item, index) => {
+                                return (
+                                  <TableRow
+                                    key={index}
+                                    sx={{
+                                      "&:last-child td, &:last-child th": {
+                                        border: 0,
+                                      },
+                                    }}
+                                  >
+                                    <TableCell align="center">
+                                      <div>
+                                        {item.chain === 1 ? (
+                                          <span className="text-white d-flex align-items-center gap-2">
+                                            <img
+                                              src={
+                                                require("./assets/tageth.svg")
+                                                  .default
+                                              }
+                                              alt=""
+                                            />
+                                            Ethereum
+                                          </span>
+                                        ) : (
+                                          <span className="text-white d-flex align-items-center gap-2">
+                                            <img
+                                              src={
+                                                require("./assets/tagbnb.svg")
+                                                  .default
+                                              }
+                                              alt=""
+                                            />
+                                            BNB Chain
+                                          </span>
+                                        )}
+                                      </div>
+                                    </TableCell>
+                                    <TableCell align="center">
+                                      <a
+                                        href={
+                                          item.chain === 1
+                                            ? `https://etherscan.io/address/${item.seller}`
+                                            : `https://bscscan.com/address/${item.seller}`
+                                        }
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        style={{ color: "#41D8E7" }}
+                                      >
+                                        {shortAddress(item.seller)}
+                                      </a>
+                                    </TableCell>
+                                    <TableCell align="center">
+                                      <a
+                                        href={
+                                          item.chain === 1
+                                            ? `https://etherscan.io/address/${item.allowedBuyer}`
+                                            : `https://bscscan.com/address/${item.allowedBuyer}`
+                                        }
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        style={{ color: "#41D8E7" }}
+                                      >
+                                        {shortAddress(item.allowedBuyer)}
+                                      </a>
+                                    </TableCell>
+                                    <TableCell align="center">
+                                      <a
+                                        href={
+                                          item.chain === 1
+                                            ? `https://etherscan.io/token/${item.tokenToSell}`
+                                            : `https://bscscan.com/token/${item.tokenToSell}`
+                                        }
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        style={{ color: "#41D8E7" }}
+                                        className="d-flex align-items-center gap-2 justify-content-center"
+                                      >
+                                        <img src={linkIcon} alt="" />
+                                        {getFormattedNumber(
+                                          item.amountToSell /
+                                            10 ** item.tokenToSellDecimals
+                                        )}{" "}
+                                        {item.tokenToSellSymbol}
+                                      </a>
+                                    </TableCell>
+                                    <TableCell align="center">
+                                      <a
+                                        href={
+                                          item.chain === 1
+                                            ? `https://etherscan.io/token/${item.tokenToBuy}`
+                                            : `https://bscscan.com/token/${item.tokenToBuy}`
+                                        }
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        style={{ color: "#41D8E7" }}
+                                        className="d-flex align-items-center gap-2 justify-content-center"
+                                      >
+                                        <img src={linkIcon} alt="" />
+                                        {getFormattedNumber(
+                                          item.amountToBuy /
+                                            10 ** item.tokenToBuyDecimals
+                                        )}{" "}
+                                        {item.tokenToBuySymbol}
+                                      </a>
+                                    </TableCell>
+
+                                    <TableCell align="center">
+                                      {coinbase &&
+                                      coinbase.toLowerCase() !==
+                                        item.seller.toLowerCase() ? (
+                                        <button
+                                          disabled={
+                                            selectedOrderObjectArrayFinal.length >
+                                              0 &&
+                                            selectedOrderObjectArrayFinal[0]
+                                              .tokenToBuySymbol !==
+                                              item.tokenToBuySymbol
+                                          }
+                                          className={`${
+                                            ((multiSelect &&
+                                              selectedOrderObjectArray.length ===
+                                                0) ||
+                                              (multiSelect &&
+                                                selectedOrderObjectArray.length >
+                                                  0 &&
+                                                !selectedOrderObjectArray.includes(
+                                                  item.orderId
+                                                ))) &&
+                                            "select-btn"
+                                          } ${
+                                            multiSelect &&
+                                            selectedOrderObjectArray.length >
+                                              0 &&
+                                            selectedOrderObjectArray.includes(
+                                              item.orderId
+                                            ) &&
+                                            "select-btn-active"
+                                          } ${
+                                            !multiSelect && "connect-btn"
+                                          }   py-1 smallfont col-lg-9`}
+                                          onClick={() => {
+                                            // handleAcceptOrder(item.orderId);
+                                            handleManageSelectOrder(item);
+                                          }}
+                                        >
+                                          {multiSelect
+                                            ? selectedOrderObjectArray.length ===
+                                              0
+                                              ? "Select"
+                                              : selectedOrderObjectArray.length >
+                                                  0 &&
+                                                selectedOrderObjectArray.includes(
+                                                  item.orderId
+                                                )
+                                              ? "Selected"
+                                              : "Select"
+                                            : "Accept"}
+                                        </button>
+                                      ) : coinbase &&
+                                        coinbase.toLowerCase() ===
+                                          item.seller.toLowerCase() ? (
+                                        <button
+                                          className="connect-btn smallfont btn col-lg-9 py-1"
+                                          onClick={() => {
+                                            handleCancelOrder(
+                                              item.orderId,
+                                              item.chain
+                                            );
+                                            setSelectedOrder(item.orderId);
+                                          }}
+                                        >
+                                          {acceptStatus === "initial" ||
+                                          selectedOrder !== item.orderId ? (
+                                            "Cancel order"
+                                          ) : acceptStatus === "success" &&
+                                            selectedOrder === item.orderId ? (
+                                            "Success"
+                                          ) : acceptStatus === "error" &&
+                                            selectedOrder === item.orderId ? (
+                                            "Failed!"
+                                          ) : (
+                                            <>
+                                              Canceling{" "}
+                                              <div
+                                                class="mx-0 spinner-border spinner-border-sm text-light"
+                                                role="status"
+                                              ></div>
+                                            </>
+                                          )}
+                                        </button>
+                                      ) : (
+                                        <button
+                                          className="connect-btn smallfont btn  col-lg-9 py-1"
+                                          onClick={() => {
+                                            onConnect();
+                                          }}
+                                        >
+                                          Connect Wallet
+                                        </button>
+                                      )}
+                                    </TableCell>
+                                  </TableRow>
+                                );
+                              })}
+
+                          {selectedItem === "private" &&
+                            loading === false &&
+                            openOrdersArray &&
+                            (openOrdersArray.length === 0 ||
+                              openOrdersArray.filter((obj) => {
+                                return (
+                                  obj.allowedBuyer !==
+                                    window.config.zero_address &&
+                                  obj.allowedBuyer.toLowerCase() ===
+                                    coinbase?.toLowerCase()
+                                );
+                              }).length === 0) && (
+                              <div className="empty-div-wrapper py-5">
+                                <span className="text-white">
+                                  No private orders, check back later
                                 </span>
                               </div>
                             )}
@@ -1327,7 +1364,7 @@ const Listing = ({
                     </div>
                   )}
 
-                  {selectedItem === "open" && (
+                  {(selectedItem === "open" || selectedItem === "private") && (
                     <div className="col-12 d-flex bg-transparent py-1 justify-content-between align-items-center">
                       <div
                         className="d-flex gap-1 align-items-center"
@@ -1364,18 +1401,19 @@ const Listing = ({
                           MultiSelect
                         </span>
                       </div>
-                      {selectedOrderObjectArray.length > 0 && (
-                        <button
-                          className={
-                            "connect-btn py-1 px-4 smallfont custom-width-btn"
-                          }
-                          onClick={() => {
-                            setShowModal(true);
-                          }}
-                        >
-                          Accept
-                        </button>
-                      )}
+                      {selectedOrderObjectArrayFinal.length > 0 &&
+                        multiSelect && (
+                          <button
+                            className={
+                              "connect-btn py-1 px-4 smallfont custom-width-btn"
+                            }
+                            onClick={() => {
+                              setShowModal(true);
+                            }}
+                          >
+                            Accept
+                          </button>
+                        )}
                       <Pagination
                         color="primary"
                         // variant="outlined"
@@ -1427,12 +1465,14 @@ const Listing = ({
           visible={showModal}
           onModalClose={() => {
             setShowModal(false);
+            setselectedOrderObjectArrayFinal([]);
           }}
           maxWidth={500}
         >
           <OutsideClickHandler
             onOutsideClick={() => {
               setShowModal(false);
+              setselectedOrderObjectArrayFinal([]);
             }}
           >
             <div className="walletmodal-wrapper gap-3">
@@ -1497,18 +1537,17 @@ const Listing = ({
 
                 <div className="d-flex align-items-center gap-4 justify-content-between">
                   <button
-                    // onClick={() => {
-                    //   acceptStatus === "buy"
-                    //     ? handleAcceptOrder(
-                    //         selectedOrderObject.orderId,
-                    //         selectedOrderObject,
-                    //         selectedOrderObject.chain
-                    //       )
-                    //     : handleApproveOrder(
-                    //         selectedOrderObject,
-                    //         selectedOrderObject.chain
-                    //       );
-                    // }}
+                    onClick={() => {
+                      acceptStatus === "buy"
+                        ? handleAcceptOrder(
+                            selectedOrderObjectArrayFinal,
+                            selectedOrderObjectArrayFinal[0].chain
+                          )
+                        : handleApproveOrder(
+                            selectedOrderObjectArrayFinal,
+                            selectedOrderObjectArrayFinal[0].chain
+                          );
+                    }}
                     className="connect-btn py-1 m-auto w-50"
                   >
                     {acceptStatus === "initial"

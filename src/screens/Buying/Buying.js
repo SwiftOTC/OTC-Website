@@ -60,16 +60,6 @@ const Buying = ({
           tokenInfo
         );
 
-        const token_symbol = await token_contract.methods
-          .symbol()
-          .call()
-          .catch((e) => {
-            console.error(e);
-          });
-        if (token_symbol) {
-          setTokenSymbol(token_symbol);
-        }
-
         const token_decimals = await token_contract.methods
           .decimals()
           .call()
@@ -92,8 +82,7 @@ const Buying = ({
     } else {
       setdisabled(false);
       setTokenAddress("");
-      setTokenSymbol('')
-      setHolderBalance(0)
+      setHolderBalance(0);
     }
   };
 
@@ -171,8 +160,19 @@ const Buying = ({
       tokenAmount * 10 ** tokenToSellDecimals
     ).toFixed(0);
 
+    const allowedBuyer =
+      selectedStatus === "public"
+        ? window.config.zero_address
+        : destinationWallet;
+    
     await otc_contract.methods
-      .createOrder(selectedToken, price2, tokenAddress, tokenAmount2)
+      .createOrder(
+        selectedToken,
+        price2,
+        tokenAddress,
+        tokenAmount2,
+        allowedBuyer
+      )
       .send({ from: coinbase })
       .then(() => {
         setListLoading(false);
@@ -180,6 +180,7 @@ const Buying = ({
         onCreateOrderSuccess();
         setTimeout(() => {
           setSellingStatus("initial");
+          setisApprove(false);
         }, 3000);
       })
       .catch((e) => {
@@ -231,7 +232,15 @@ const Buying = ({
     const web3 = new Web3(window.ethereum);
     let token_decimals;
     const token_contract = new web3.eth.Contract(window.TOKEN_ABI, tokenaddr);
-
+    const token_symbol = await token_contract.methods
+      .symbol()
+      .call()
+      .catch((e) => {
+        console.error(e);
+      });
+    if (token_symbol) {
+      setTokenSymbol(token_symbol);
+    }
     if (coinbase) {
       if (
         tokenaddr.toLowerCase() === "0xdac17f958d2ee523a2206206994597c13d831ec7"
@@ -249,11 +258,10 @@ const Buying = ({
       const holder_balance = await token_contract.methods
         .balanceOf(coinbase)
         .call()
-
         .catch((e) => {
           console.error(e);
         });
-
+      console.log("holder_balance", holder_balance);
       if (holder_balance) {
         console.log(holder_balance);
         if (holder_balance === 0) {
@@ -269,6 +277,8 @@ const Buying = ({
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+ 
 
   return (
     <div className="container-fluid px-0 otherpages-wrapper">
@@ -393,7 +403,8 @@ const Buying = ({
                   </FormControl>
                 </div>
                 <span className="balance-text d-flex align-items-center gap-1">
-                  My Balance: {getFormattedNumber(holderBalance, 3)} {tokenSymbol}
+                  My Balance: {getFormattedNumber(holderBalance, 3)}{" "}
+                  {tokenSymbol}
                 </span>
               </div>
               <div className="d-flex flex-column gap-2">
@@ -678,7 +689,10 @@ const Buying = ({
                     tokenAddress !== undefined &&
                     tokenAmount !== undefined &&
                     pricetoSell !== undefined &&
-                    selectedToken !== undefined
+                    selectedToken !== undefined &&
+                    (selectedStatus === "public" ||
+                      (selectedStatus === "private" &&
+                        destinationWallet !== ""))
                       ? false
                       : true
                   }

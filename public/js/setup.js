@@ -80,8 +80,9 @@ window.config = {
   opbnb_endpoint: "https://opbnb.publicnode.com",
 
   weth_address: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+  zero_address: "0x0000000000000000000000000000000000000000",
   otc_address: "0x4Cd7CE9705c7821d13a8eA4ee41A9403ED90462F",
-  otc_bnb_address: "0xBfB62D7C519e6395cf964Dbbd31cE76e841602c0",
+  otc_bnb_address: "0xDCB8dd658CB1962f56E82aAB544bD47FcD46e23D",
 
   otc_old_address: "0x4Cd7CE9705c7821d13a8eA4ee41A9403ED90462F",
   otc_old_bnb_address: "0x7fd264Ff7Ad1ad8Db35102CF7C370Ad5E61eeAAF",
@@ -252,7 +253,7 @@ async function getCoinbase() {
 
 //ABIS
 
-window.OTC_ABI = [
+window.OTC_OLD_ABI = [
   { inputs: [], stateMutability: "nonpayable", type: "constructor" },
   {
     anonymous: false,
@@ -438,6 +439,304 @@ window.OTC_ABI = [
     name: "owner",
     outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "uint256", name: "_feePercentage", type: "uint256" },
+    ],
+    name: "setFeePercentage",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "address", name: "_treasuryAddress", type: "address" },
+    ],
+    name: "setTreasuryAddress",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "address", name: "newOwner", type: "address" }],
+    name: "transferOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "treasury_address",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "address", name: "_token", type: "address" },
+      { internalType: "bool", name: "_whitelisted", type: "bool" },
+    ],
+    name: "whitelistToken",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "address", name: "", type: "address" }],
+    name: "whitelistedTokens",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function",
+  },
+];
+
+window.OTC_ABI = [
+  {
+    inputs: [
+      { internalType: "address", name: "initialOwner", type: "address" },
+      { internalType: "address", name: "treasuryAddress", type: "address" },
+      {
+        internalType: "uint256",
+        name: "initialFeePercentage",
+        type: "uint256",
+      },
+    ],
+    stateMutability: "nonpayable",
+    type: "constructor",
+  },
+  {
+    inputs: [{ internalType: "address", name: "owner", type: "address" }],
+    name: "OwnableInvalidOwner",
+    type: "error",
+  },
+  {
+    inputs: [{ internalType: "address", name: "account", type: "address" }],
+    name: "OwnableUnauthorizedAccount",
+    type: "error",
+  },
+  { inputs: [], name: "ReentrancyGuardReentrantCall", type: "error" },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "orderId",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "buyer",
+        type: "address",
+      },
+    ],
+    name: "OfferAccepted",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "orderId",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "seller",
+        type: "address",
+      },
+    ],
+    name: "OrderCanceled",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "uint256",
+        name: "orderId",
+        type: "uint256",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "seller",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "tokenToSell",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amountToSell",
+        type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "tokenToBuy",
+        type: "address",
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amountToBuy",
+        type: "uint256",
+      },
+    ],
+    name: "OrderMade",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: true,
+        internalType: "address",
+        name: "previousOwner",
+        type: "address",
+      },
+      {
+        indexed: true,
+        internalType: "address",
+        name: "newOwner",
+        type: "address",
+      },
+    ],
+    name: "OwnershipTransferred",
+    type: "event",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "_orderId", type: "uint256" }],
+    name: "acceptOrder",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "uint256[]", name: "orderIds", type: "uint256[]" },
+    ],
+    name: "bulkBuyOrders",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "_orderId", type: "uint256" }],
+    name: "cancelOrder",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "address", name: "_tokenToSell", type: "address" },
+      { internalType: "uint256", name: "_amountToSell", type: "uint256" },
+      { internalType: "address", name: "_tokenToBuy", type: "address" },
+      { internalType: "uint256", name: "_amountToBuy", type: "uint256" },
+      { internalType: "address", name: "_allowedBuyer", type: "address" },
+    ],
+    name: "createOrder",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "feePercentage",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "_orderId", type: "uint256" }],
+    name: "getOrder",
+    outputs: [
+      {
+        components: [
+          { internalType: "uint256", name: "orderId", type: "uint256" },
+          { internalType: "address", name: "seller", type: "address" },
+          { internalType: "address", name: "buyer", type: "address" },
+          { internalType: "address", name: "tokenToSell", type: "address" },
+          { internalType: "uint256", name: "amountToSell", type: "uint256" },
+          { internalType: "address", name: "tokenToBuy", type: "address" },
+          { internalType: "uint256", name: "amountToBuy", type: "uint256" },
+          { internalType: "address", name: "allowedBuyer", type: "address" },
+          { internalType: "uint8", name: "status", type: "uint8" },
+        ],
+        internalType: "struct OTCSmartContract.Order",
+        name: "",
+        type: "tuple",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint8", name: "status", type: "uint8" }],
+    name: "getOrdersByStatus",
+    outputs: [{ internalType: "uint256[]", name: "", type: "uint256[]" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "address", name: "user", type: "address" },
+      { internalType: "uint8", name: "status", type: "uint8" },
+    ],
+    name: "getUserOrdersByStatus",
+    outputs: [{ internalType: "uint256[]", name: "", type: "uint256[]" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "orderCount",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    name: "orders",
+    outputs: [
+      { internalType: "uint256", name: "orderId", type: "uint256" },
+      { internalType: "address", name: "seller", type: "address" },
+      { internalType: "address", name: "buyer", type: "address" },
+      { internalType: "address", name: "tokenToSell", type: "address" },
+      { internalType: "uint256", name: "amountToSell", type: "uint256" },
+      { internalType: "address", name: "tokenToBuy", type: "address" },
+      { internalType: "uint256", name: "amountToBuy", type: "uint256" },
+      { internalType: "address", name: "allowedBuyer", type: "address" },
+      { internalType: "uint8", name: "status", type: "uint8" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "owner",
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "renounceOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
