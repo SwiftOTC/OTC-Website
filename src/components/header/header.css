@@ -114,6 +114,7 @@
   cursor: pointer;
   padding: 5px;
   border-radius: 10px;
+  justify-content: space-between;
 }
 
 .menuitem2:hover {

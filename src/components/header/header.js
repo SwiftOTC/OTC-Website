@@ -14,6 +14,7 @@ import OutsideClickHandler from "react-outside-click-handler";
 import copy from "./assets/copy.svg";
 import check from "./assets/check.svg";
 import logout from "./assets/logout.svg";
+import ordersIcon from "../../assets/svg/ordersIcon.svg";
 
 const Header = ({
   isConnected,
@@ -222,6 +223,16 @@ const Header = ({
                 >
                   <div className="menuwrapper">
                     <div className="d-flex flex-column gap-2">
+                      <NavLink
+                        className="menuitem2 text-decoration-none"
+                        to={"/account"}
+                        onClick={() => {
+                          setShowMenu(false);
+                        }}
+                      >
+                        
+                        My Orders<img src={ordersIcon} alt="" />
+                      </NavLink>
                       <span
                         className="menuitem2"
                         onClick={() => {
@@ -241,7 +252,7 @@ const Header = ({
                           manageDisconnect();
                         }}
                       >
-                        <img src={logout} alt="" /> Disconnect{" "}
+                         Disconnect{" "}<img src={logout} alt="" />
                       </span>
                     </div>
                   </div>

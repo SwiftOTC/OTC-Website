@@ -232,6 +232,7 @@
 .dropdown-item:hover {
   border: 1px solid #0D91C3;
   background: rgba(13, 145, 195, 0.30);  
+  cursor: pointer;
 }
 
 .receive-wrapper {

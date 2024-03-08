@@ -173,9 +173,23 @@ const MobileHeader = ({
             </NavLink>
           </div>
 
+          <div className="mobile-nav-item d-flex align-items-center justify-content-between p-3">
+            <NavLink
+              to="/account"
+              className="nav-anchor font-poppins d-flex align-items-center justify-content-between w-100"
+              style={{ textDecoration: "none" }}
+              onClick={() => setOpenNavbar(false)}
+            >
+              <h6 className="mobile-nav-link font-poppins mb-0">
+                Account
+              </h6>
+              <img src={mobileArrow} alt="arrow" />{" "}
+            </NavLink>
+          </div>
+
           <div className="w-100 d-flex align-items-center justify-content-center gap-3">
             {isConnected ? (
-              <button className="btn-connected btn">
+              <button className="balance-wrapper2">
                 {shortAddress(coinbase)}
               </button>
             ) : (

@@ -21,7 +21,6 @@ import { Checkbox, FormControlLabel, FormGroup } from "@mui/material";
 import indicator from "../../assets/svg/indicator.svg";
 
 const Listing = ({
-  isAdmin,
   isConnected,
   coinbase,
   onConnect,
@@ -329,79 +328,7 @@ const Listing = ({
                 >
                   <span>Private orders</span>
                 </div>
-                {/* {isAdmin && (
-                    <div
-                      className={`listing-single-item d-flex align-items-center gap-1 ${
-                        selectedItem === "pending" && "active-item"
-                      } `}
-                      onClick={() => {
-                        setSelectedItem("pending");
-                        onPendingClick(20);
-                      }}
-                    >
-                      <span>Awaiting Completion</span>
-                      <div class="dropdown position relative"onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                      }}>
-                        <button
-                          class={`btn launchpad-dropdown p-1 d-flex gap-1 justify-content-between align-items-center dropdown-toggle2 w-100`}
-                          type="button"
-                          data-bs-toggle="dropdown"
-                          aria-expanded="false"
-                        >
-                          <div
-                            className="d-flex align-items-center gap-2"
-                            style={{ color: "#fff" }}
-                          >
-                            {chainId === 1 ? (
-                              <img
-                                src={
-                                  require(`../../assets/svg/eth.svg`).default
-                                }
-                                alt=""
-                              />
-                            ) : (
-                              <img
-                                src={
-                                  require(`../../assets/svg/bnb.svg`).default
-                                }
-                                alt=""
-                              />
-                            )}
-                          </div>
-                          <img src={indicator} alt="" />
-                        </button>
-                        <ul class="dropdown-menu w-100">
-                          <li
-                            className="dropdown-item launchpad-item d-flex align-items-center gap-2"
-                            onClick={() => {
-                              onSwitchNetwork("0x1");
-                            }}
-                          >
-                            {" "}
-                            <img
-                              src={require(`../../assets/svg/eth.svg`).default}
-                              alt=""
-                            />{" "}
-                            Ethereum
-                          </li>
-                          <li
-                            className="dropdown-item launchpad-item d-flex align-items-center gap-2"
-                            onClick={() => {
-                              onSwitchNetwork("0x38");
-                            }}
-                          >
-                            <img
-                              src={require(`../../assets/svg/bnb.svg`).default}
-                              alt=""
-                            />
-                            BNB Chain
-                          </li>
-                        </ul>
-                      </div>
-                    </div>
-                  )} */}
+                
                 <div
                   className={`listing-single-item col-lg-2 py-2 px-3  d-flex align-items-center gap-1 ${
                     selectedItem === "completed" && "active-item"
