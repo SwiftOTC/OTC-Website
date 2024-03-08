@@ -108,8 +108,8 @@ const Selling = ({
     } else {
       setdisabled(false);
       setTokenAddress("");
-      setTokenSymbol('')
-      setHolderBalance(0)
+      setTokenSymbol("");
+      setHolderBalance(0);
     }
   };
 
@@ -185,10 +185,19 @@ const Selling = ({
       tokenAmount * 10 ** tokenDecimals
     ).toFixed(0);
 
-    const allowedBuyer = selectedStatus === 'public' ? window.config.zero_address : destinationWallet
+    const allowedBuyer =
+      selectedStatus === "public"
+        ? window.config.zero_address
+        : destinationWallet;
 
     await otc_contract.methods
-      .createOrder(tokenAddress, tokenAmount2, selectedToken, price2,allowedBuyer)
+      .createOrder(
+        tokenAddress,
+        tokenAmount2,
+        selectedToken,
+        price2,
+        allowedBuyer
+      )
       .send({ from: coinbase })
       .then(() => {
         setListLoading(false);
@@ -422,7 +431,6 @@ const Selling = ({
                           className="position-absolute infoRed"
                           onClick={() => {
                             setShowTooltip(true);
-                            console.log("in");
                           }}
                         />
                         <OutsideClickHandler
@@ -540,8 +548,6 @@ const Selling = ({
                       ) : (
                         <span></span>
                       )}
-
-                      
                     </Select>
                   </FormControl>
                 </div>
@@ -662,7 +668,8 @@ const Selling = ({
                     tokenAddress !== undefined &&
                     tokenAmount !== undefined &&
                     pricetoSell !== undefined &&
-                    selectedToken !== undefined && selectedStatus!==''
+                    selectedToken !== undefined &&
+                    selectedStatus !== ""
                       ? false
                       : true
                   }

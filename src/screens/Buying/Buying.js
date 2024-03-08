@@ -164,7 +164,7 @@ const Buying = ({
       selectedStatus === "public"
         ? window.config.zero_address
         : destinationWallet;
-    
+
     await otc_contract.methods
       .createOrder(
         selectedToken,
@@ -261,9 +261,8 @@ const Buying = ({
         .catch((e) => {
           console.error(e);
         });
-      console.log("holder_balance", holder_balance);
+
       if (holder_balance) {
-        console.log(holder_balance);
         if (holder_balance === 0) {
           setHolderBalance(holder_balance);
         } else {
@@ -277,8 +276,6 @@ const Buying = ({
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-
- 
 
   return (
     <div className="container-fluid px-0 otherpages-wrapper">
@@ -509,7 +506,6 @@ const Buying = ({
                             className="position-absolute infoRed"
                             onClick={() => {
                               setShowTooltip(true);
-                              console.log("in");
                             }}
                           />
                           <OutsideClickHandler

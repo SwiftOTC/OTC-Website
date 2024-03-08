@@ -87,7 +87,6 @@ const Listing = ({
       .bulkBuyOrders(orderIds)
       .send({ from: coinbase })
       .then(() => {
-        console.log("success");
         setAcceptStatus("success");
         setTimeout(() => {
           setAcceptStatus("initial");
@@ -109,7 +108,7 @@ const Listing = ({
   const handleApproveOrder = async (obj, chain) => {
     const web3 = new Web3(window.ethereum);
     setAcceptStatus("loading-approve");
-    console.log(obj);
+
     const tokenToBuyContract = new web3.eth.Contract(
       window.TOKEN_ABI,
       obj[0].tokenToBuy
@@ -135,7 +134,6 @@ const Listing = ({
       .approve(otc_sc, amountToBuy_formatted)
       .send({ from: coinbase })
       .then(() => {
-        console.log("success-approve");
         setAcceptStatus("success-approve");
         setTimeout(() => {
           setAcceptStatus("buy");
@@ -216,7 +214,6 @@ const Listing = ({
       .cancelOrder(orderId)
       .send({ from: coinbase })
       .then(() => {
-        console.log("success");
         setAcceptStatus("success");
         setTimeout(() => {
           setAcceptStatus("initial");

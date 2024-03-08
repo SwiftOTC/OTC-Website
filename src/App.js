@@ -129,7 +129,7 @@ function App() {
 
     if (orderCount && Number(orderCount) > 0) {
       await Promise.all(
-        window.range(0,  Number(orderCount) - 1).map(async (i) => {
+        window.range(0, Number(orderCount) - 1).map(async (i) => {
           let tokenToSell_decimals;
           let tokenToBuy_decimals;
           let tokenToSell_symbol;
@@ -387,7 +387,7 @@ function App() {
 
     if (orderCount && Number(orderCount) > 0) {
       await Promise.all(
-        window.range(0,  Number(orderCount) - 1).map(async (i) => {
+        window.range(0, Number(orderCount) - 1).map(async (i) => {
           let tokenToSell_decimals;
           let tokenToBuy_decimals;
           let tokenToSell_symbol;
@@ -947,7 +947,7 @@ function App() {
 
     if (orderCount && Number(orderCount) > 0) {
       await Promise.all(
-        window.range(0,  Number(orderCount) - 1).map(async (i) => {
+        window.range(0, Number(orderCount) - 1).map(async (i) => {
           let tokenToSell_decimals;
           let tokenToBuy_decimals;
           let tokenToSell_symbol;
@@ -1056,7 +1056,7 @@ function App() {
 
     if (orderCountOld && Number(orderCountOld) > 0) {
       await Promise.all(
-        window.range(0,  Number(orderCount) - 1).map(async (i) => {
+        window.range(0, Number(orderCount) - 1).map(async (i) => {
           let tokenToSell_decimals;
           let tokenToBuy_decimals;
           let tokenToSell_symbol;
@@ -1295,7 +1295,7 @@ function App() {
       window.OTC_OLD_ABI,
       window.config.otc_address
     );
-    console.log(otc_contract)
+
     const otc_bnb_contract = new window.bscWeb3.eth.Contract(
       window.OTC_ABI,
       window.config.otc_bnb_address
@@ -1350,7 +1350,7 @@ function App() {
 
     if (orderCount && Number(orderCount) > 0) {
       await Promise.all(
-        window.range(0,  Number(orderCount) - 1).map(async (i) => {
+        window.range(0, Number(orderCount) - 1).map(async (i) => {
           let tokenToSell_decimals;
           let tokenToBuy_decimals;
           let tokenToSell_symbol;
@@ -1804,21 +1804,17 @@ function App() {
   };
 
   const checkConnection = async () => {
-    
-      await window.getCoinbase().then((data) => {
-        if (data) {
-          setCoinbase(data);
-          setIsConnected(true);
-          localStorage.setItem("logout", "false");
-        } else {
-          setCoinbase();
-          setIsConnected(false);
-        }
-      });
-    
-    
+    await window.getCoinbase().then((data) => {
+      if (data) {
+        setCoinbase(data);
+        setIsConnected(true);
+        localStorage.setItem("logout", "false");
+      } else {
+        setCoinbase();
+        setIsConnected(false);
+      }
+    });
   };
- 
 
   useEffect(() => {
     if (window.ethereum && window.ethereum.isConnected() === true) {
@@ -1834,7 +1830,7 @@ function App() {
       // localStorage.setItem("logout", "true");
     }
     checkNetworkId();
-  }, [window.ethereum,coinbase, logout]);
+  }, [window.ethereum, coinbase, logout]);
 
   useEffect(() => {
     if (dataFetchedRef2.current) return;
