@@ -321,6 +321,7 @@ function App() {
                 console.error(e);
               });
           }
+        
           if (filteredInfo && filteredInfo.status === "0") {
             openArrayBnb.push({
               ...filteredInfo,
@@ -334,7 +335,7 @@ function App() {
         })
       );
     }
-
+    console.log('openArrayBnb',openArrayBnb)
     if (netID === 1) {
       setopenOrdersArray(openArray.reverse());
     } else {

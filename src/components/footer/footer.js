@@ -182,7 +182,8 @@ const Footer = ({ orders }) => {
           <div>
             <span className="copyrightTxt d-flex align-items-center gap-2">
               Audited By:
-              <img src={certik} alt="" height={30} />
+              <a href='https://github.com/SwiftOTC/contracts/blob/main/SwiftOTC-Certik.pdf' target="_blank" rel="noreferrer">
+              <img src={certik} alt="" height={30} /></a>
             </span>
           </div>
           <span className="w-100 d-flex align-items-center justify-content-center copyrightTxt">
