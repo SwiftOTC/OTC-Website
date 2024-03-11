@@ -25,9 +25,7 @@ function App() {
   const [completedOrdersArray, setcompletedOrdersArray] = useState([]);
   const [openOrdersArray, setopenOrdersArray] = useState([]);
 
-  const [usercompletedOrdersArray, setUsercompletedOrdersArray] = useState([]);
   const [useropenOrdersArray, setUseropenOrdersArray] = useState([]);
-  const [useractivityArray, setUseractivityArray] = useState([]);
 
   const [userloading, setUserLoading] = useState(false);
 
@@ -48,10 +46,21 @@ function App() {
 
   const [totalOrders, settotalOrders] = useState(0);
   const [walletModal, setWalletModal] = useState(false);
+  const [isWhiteListed, setisWhiteListed] = useState(false);
 
   const logout = localStorage.getItem("logout");
   const dataFetchedRef = useRef(false);
   const dataFetchedRef2 = useRef(false);
+
+  const checkUserIfWhitelisted = async (address) => {
+    const result = await window.checkWhitelistedUser(address);
+
+    if (result && result === 0) {
+      setisWhiteListed(false);
+    } else if (result && result === 1) {
+      setisWhiteListed(true);
+    }
+  };
 
   const handleConnect = async () => {
     await window.connectWallet().then(() => {
@@ -68,12 +77,11 @@ function App() {
     if (!window.gatewallet) {
       await window.disconnectWallet();
       localStorage.setItem("logout", "true");
-      setUseractivityArray([]);
       setUserLoading(false);
-      setUsercompletedOrdersArray([]);
       setUseropenOrdersArray([]);
       setCoinbase();
       setIsConnected(false);
+      setisWhiteListed(false);
     }
   };
 
@@ -321,7 +329,7 @@ function App() {
                 console.error(e);
               });
           }
-        
+
           if (filteredInfo && filteredInfo.status === "0") {
             openArrayBnb.push({
               ...filteredInfo,
@@ -335,7 +343,7 @@ function App() {
         })
       );
     }
-    console.log('openArrayBnb',openArrayBnb)
+    // console.log('openArrayBnb',openArrayBnb)
     if (netID === 1) {
       setopenOrdersArray(openArray.reverse());
     } else {
@@ -1836,8 +1844,6 @@ function App() {
 
   const getUserOrders = async (address) => {
     let userOpenOrdersArray = [];
-    let userCompletedOrdersArray = [];
-    let userActivityArray = [];
     let openArray = [];
     let completedArray = [];
 
@@ -1865,20 +1871,12 @@ function App() {
         console.error(e);
       });
 
-    const allCompletedUserOrders = await otc_bnb_contract.methods
-      .getUserOrdersByStatus(address, "1")
+    const allOpenOrders = await otc_bnb_contract.methods
+      .orderCount()
       .call()
       .catch((e) => {
         console.error(e);
       });
-
-    const allActivityUserOrders = await otc_bnb_contract.methods
-      .getUserOrdersByStatus(address, "2")
-      .call()
-      .catch((e) => {
-        console.error(e);
-      });
-    setUserLoading(true);
 
     const orderCount = await otc_contract.methods
       .orderCount()
@@ -2018,6 +2016,107 @@ function App() {
       // const finalPendingArray = Object.values((pendingOrdersArray))
     }
 
+    if (allOpenOrders && allOpenOrders > 0) {
+      await Promise.all(
+        window.range(0, allOpenOrders - 1).map(async (i) => {
+          let tokenToSell_decimals;
+          let tokenToBuy_decimals;
+          let tokenToSell_symbol;
+          let tokenToBuy_symbol;
+
+          const orderDetail = await otc_bnb_contract.methods
+            .orders(i)
+            .call()
+            .catch((e) => {
+              console.error(e);
+            });
+
+          const filteredInfo = Object.fromEntries(Object.entries(orderDetail));
+
+          if (filteredInfo) {
+            const tokenToSell_contract = new window.bscWeb3.eth.Contract(
+              window.TOKEN_ABI,
+              filteredInfo.tokenToSell
+            );
+
+            const tokenToBuy_contract = new window.bscWeb3.eth.Contract(
+              window.TOKEN_ABI,
+              filteredInfo.tokenToBuy
+            );
+
+            if (
+              filteredInfo.tokenToSell.toLowerCase() ===
+              "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+            ) {
+              tokenToSell_symbol = "USDC";
+            } else {
+              tokenToSell_symbol = await tokenToSell_contract.methods
+                .symbol()
+                .call()
+                .catch((e) => {
+                  console.error(e);
+                });
+            }
+
+            if (
+              filteredInfo.tokenToSell.toLowerCase() ===
+              "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+            ) {
+              tokenToSell_decimals = 6;
+            } else {
+              tokenToSell_decimals = await tokenToSell_contract.methods
+                .decimals()
+                .call()
+                .catch((e) => {
+                  console.error(e);
+                });
+            }
+
+            if (
+              filteredInfo.tokenToBuy.toLowerCase() ===
+              "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+            ) {
+              tokenToBuy_decimals = 6;
+            } else {
+              tokenToBuy_decimals = await tokenToBuy_contract.methods
+                .decimals()
+                .call()
+                .catch((e) => {
+                  console.error(e);
+                });
+            }
+            if (
+              filteredInfo.tokenToBuy.toLowerCase() ===
+              "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
+            ) {
+              tokenToBuy_symbol = "USDC";
+            } else {
+              tokenToBuy_symbol = await tokenToBuy_contract.methods
+                .symbol()
+                .call()
+                .catch((e) => {
+                  console.error(e);
+                });
+            }
+
+            if (
+              filteredInfo &&
+              filteredInfo.allowedBuyer.toLowerCase() === address.toLowerCase()
+            ) {
+              userOpenOrdersArray.push({
+                ...filteredInfo,
+                tokenToSellSymbol: tokenToSell_symbol,
+                tokenToBuySymbol: tokenToBuy_symbol,
+                tokenToSellDecimals: tokenToSell_decimals,
+                tokenToBuyDecimals: tokenToBuy_decimals,
+                chain: 56,
+              });
+            }
+          }
+        })
+      );
+    }
+
     if (allOpenUserOrders && allOpenUserOrders.length > 0) {
       await Promise.all(
         window.range(0, allOpenUserOrders.length - 1).map(async (i) => {
@@ -2113,225 +2212,19 @@ function App() {
       );
     }
 
-    if (allCompletedUserOrders && allCompletedUserOrders.length > 0) {
-      await Promise.all(
-        window.range(0, allCompletedUserOrders.length - 1).map(async (i) => {
-          let tokenToSell_decimals;
-          let tokenToBuy_decimals;
-          let tokenToSell_symbol;
-          let tokenToBuy_symbol;
-
-          const orderDetail = await otc_bnb_contract.methods
-            .orders(allCompletedUserOrders[i])
-            .call()
-            .catch((e) => {
-              console.error(e);
-            });
-
-          const filteredInfo = Object.fromEntries(Object.entries(orderDetail));
-
-          const tokenToSell_contract = new window.bscWeb3.eth.Contract(
-            window.TOKEN_ABI,
-            filteredInfo.tokenToSell
-          );
-
-          const tokenToBuy_contract = new window.bscWeb3.eth.Contract(
-            window.TOKEN_ABI,
-            filteredInfo.tokenToBuy
-          );
-
-          if (
-            filteredInfo.tokenToSell.toLowerCase() ===
-            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
-          ) {
-            tokenToSell_symbol = "USDC";
-          } else {
-            tokenToSell_symbol = await tokenToSell_contract.methods
-              .symbol()
-              .call()
-              .catch((e) => {
-                console.error(e);
-              });
-          }
-
-          if (
-            filteredInfo.tokenToSell.toLowerCase() ===
-            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
-          ) {
-            tokenToSell_decimals = 6;
-          } else {
-            tokenToSell_decimals = await tokenToSell_contract.methods
-              .decimals()
-              .call()
-              .catch((e) => {
-                console.error(e);
-              });
-          }
-
-          if (
-            filteredInfo.tokenToBuy.toLowerCase() ===
-            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
-          ) {
-            tokenToBuy_decimals = 6;
-          } else {
-            tokenToBuy_decimals = await tokenToBuy_contract.methods
-              .decimals()
-              .call()
-              .catch((e) => {
-                console.error(e);
-              });
-          }
-          if (
-            filteredInfo.tokenToBuy.toLowerCase() ===
-            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
-          ) {
-            tokenToBuy_symbol = "USDC";
-          } else {
-            tokenToBuy_symbol = await tokenToBuy_contract.methods
-              .symbol()
-              .call()
-              .catch((e) => {
-                console.error(e);
-              });
-          }
-          if (filteredInfo) {
-            userCompletedOrdersArray.push({
-              ...filteredInfo,
-              tokenToSellSymbol: tokenToSell_symbol,
-              tokenToBuySymbol: tokenToBuy_symbol,
-              tokenToSellDecimals: tokenToSell_decimals,
-              tokenToBuyDecimals: tokenToBuy_decimals,
-              chain: 56,
-            });
-          }
-        })
-      );
-    }
-    if (allActivityUserOrders && allActivityUserOrders.length > 0) {
-      await Promise.all(
-        window.range(0, allActivityUserOrders.length - 1).map(async (i) => {
-          let tokenToSell_decimals;
-          let tokenToBuy_decimals;
-          let tokenToSell_symbol;
-          let tokenToBuy_symbol;
-
-          const orderDetail = await otc_bnb_contract.methods
-            .orders(allActivityUserOrders[i])
-            .call()
-            .catch((e) => {
-              console.error(e);
-            });
-
-          const filteredInfo = Object.fromEntries(Object.entries(orderDetail));
-
-          const tokenToSell_contract = new window.bscWeb3.eth.Contract(
-            window.TOKEN_ABI,
-            filteredInfo.tokenToSell
-          );
-
-          const tokenToBuy_contract = new window.bscWeb3.eth.Contract(
-            window.TOKEN_ABI,
-            filteredInfo.tokenToBuy
-          );
-
-          if (
-            filteredInfo.tokenToSell.toLowerCase() ===
-            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
-          ) {
-            tokenToSell_symbol = "USDC";
-          } else {
-            tokenToSell_symbol = await tokenToSell_contract.methods
-              .symbol()
-              .call()
-              .catch((e) => {
-                console.error(e);
-              });
-          }
-
-          if (
-            filteredInfo.tokenToSell.toLowerCase() ===
-            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
-          ) {
-            tokenToSell_decimals = 6;
-          } else {
-            tokenToSell_decimals = await tokenToSell_contract.methods
-              .decimals()
-              .call()
-              .catch((e) => {
-                console.error(e);
-              });
-          }
-
-          if (
-            filteredInfo.tokenToBuy.toLowerCase() ===
-            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
-          ) {
-            tokenToBuy_decimals = 6;
-          } else {
-            tokenToBuy_decimals = await tokenToBuy_contract.methods
-              .decimals()
-              .call()
-              .catch((e) => {
-                console.error(e);
-              });
-          }
-          if (
-            filteredInfo.tokenToBuy.toLowerCase() ===
-            "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48"
-          ) {
-            tokenToBuy_symbol = "USDC";
-          } else {
-            tokenToBuy_symbol = await tokenToBuy_contract.methods
-              .symbol()
-              .call()
-              .catch((e) => {
-                console.error(e);
-              });
-          }
-          if (filteredInfo) {
-            userActivityArray.push({
-              ...filteredInfo,
-              tokenToSellSymbol: tokenToSell_symbol,
-              tokenToBuySymbol: tokenToBuy_symbol,
-              tokenToSellDecimals: tokenToSell_decimals,
-              tokenToBuyDecimals: tokenToBuy_decimals,
-              chain: 56,
-            });
-          }
-        })
-      );
-    }
-
-    let userActivityArray2 = [
-      ...userOpenOrdersArray,
-      ...userCompletedOrdersArray,
-    ];
-    let finalUserActivityArray = [
-      ...userActivityArray,
-      ...completedArray,
-      ...userActivityArray2,
-    ];
-
-    let finalUserOpenArray = [...userOpenOrdersArray, ...openArray];
-    let finalUserCompletedArray = [
-      ...userCompletedOrdersArray,
-      ...completedArray,
-    ];
-
     if (netID === 1) {
       setUseropenOrdersArray(openArray.reverse());
     } else {
       setUseropenOrdersArray(userOpenOrdersArray.reverse());
     }
 
-    setUseractivityArray(finalUserActivityArray);
     setUserLoading(false);
-    setUsercompletedOrdersArray(finalUserCompletedArray);
   };
 
   useEffect(() => {
     if (isConnected && coinbase) {
       getUserOrders(coinbase);
+      checkUserIfWhitelisted(coinbase);
     }
   }, [coinbase, isConnected, usercount, chainId]);
 
@@ -2496,6 +2389,7 @@ function App() {
                 onActivityClick={getActivityOrders}
                 onCompletedClick={getAllCompletedOrders}
                 onOpenClick={getAllOpenOrders}
+                isWhiteListed={isWhiteListed}
               />
             }
           />
@@ -2512,8 +2406,6 @@ function App() {
                 }}
                 chainId={chainId}
                 openOrdersArray={useropenOrdersArray}
-                completedOrdersArray={usercompletedOrdersArray}
-                activityArray={useractivityArray}
                 onAcceptUserOrderComplete={() => {
                   setUsercount(usercount + 1);
                 }}
@@ -2524,6 +2416,7 @@ function App() {
                 onActivityClick={getActivityOrders}
                 onCompletedClick={getAllCompletedOrders}
                 onOpenClick={getAllOpenOrders}
+                isWhiteListed={isWhiteListed}
               />
             }
           />

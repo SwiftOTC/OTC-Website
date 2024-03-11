@@ -41,6 +41,7 @@ const Listing = ({
   onActivityClick,
   onOpenClick,
   onCompletedClick,
+  isWhiteListed,
 }) => {
   const [selectedItem, setSelectedItem] = useState("");
   const [acceptStatus, setAcceptStatus] = useState("initial");
@@ -1297,16 +1298,17 @@ const Listing = ({
                       <div
                         className="d-flex gap-1 align-items-center"
                         onClick={() => {
-                          setmultiSelect(!multiSelect);
+                          isWhiteListed && setmultiSelect(!multiSelect);
                         }}
                         style={{ cursor: "pointer" }}
                       >
                         <FormGroup>
                           <FormControlLabel
                             onChange={() => {
-                              setmultiSelect(!multiSelect);
+                              isWhiteListed && setmultiSelect(!multiSelect);
                             }}
                             classes={"text-danger"}
+                            // disabled={!isWhiteListed}
                             control={
                               <Checkbox
                                 size="small"
@@ -1403,100 +1405,126 @@ const Listing = ({
               setselectedOrderObjectArrayFinal([]);
             }}
           >
-            <div className="walletmodal-wrapper gap-3">
-              <div className="sc-jwKygS bFQpTL">
-                <h3 style={{ fontSize: 20, color: "#fff" }} className="mb-2">
-                  Confirm Transaction
-                </h3>
-                <span className="text-white">
-                  Please review the summary before confirming.
-                </span>
-              </div>
+            {isWhiteListed ? (
+              <div className="walletmodal-wrapper gap-3">
+                <div className="sc-jwKygS bFQpTL">
+                  <h3 style={{ fontSize: 20, color: "#fff" }} className="mb-2">
+                    Confirm Transaction
+                  </h3>
+                  <span className="text-white">
+                    Please review the summary before confirming.
+                  </span>
+                </div>
 
-              <div className="d-flex flex-column gap-4">
-                {selectedOrderObjectArrayFinal &&
-                  selectedOrderObjectArrayFinal.length > 0 &&
-                  selectedOrderObjectArrayFinal.map((item, index) => {
-                    return (
-                      <div className="confirm-summary-wrapper p-3" key={index}>
-                        <div className="d-flex flex-column gap-2">
-                          <div className="d-flex justify-content-between gap-2 align-items-center">
-                            <span className="leftText">Token</span>
-                            <span className="rightText d-flex align-items-center gap-2">
-                              {item.tokenToSellSymbol}
-                              <a
-                                href={
-                                  item.chain === 1
-                                    ? `https://etherscan.io/token/${item.tokenToSell}`
-                                    : `https://bscscan.com/token/${item.tokenToSell}`
-                                }
-                                target="_blank"
-                                rel="noreferrer"
-                                style={{ color: "#41D8E7" }}
-                                className="d-flex align-items-center gap-2 justify-content-center"
-                              >
-                                <img src={linkIcon} alt="" />{" "}
-                              </a>
-                            </span>
-                          </div>
-                          <div className="d-flex justify-content-between gap-2 align-items-center">
-                            <span className="leftText">Buying</span>
-                            <span className="rightText">
-                              {getFormattedNumber(
-                                item.amountToSell /
-                                  10 ** item.tokenToSellDecimals
-                              )}{" "}
-                              ({item.tokenToSellSymbol})
-                            </span>
-                          </div>
-                          <div className="d-flex justify-content-between gap-2 align-items-center">
-                            <span className="leftText">Spending</span>
-                            <span className="rightText">
-                              {getFormattedNumber(
-                                item.amountToBuy / 10 ** item.tokenToBuyDecimals
-                              )}{" "}
-                              ({item.tokenToBuySymbol})
-                            </span>
+                <div className="d-flex flex-column gap-4">
+                  {selectedOrderObjectArrayFinal &&
+                    selectedOrderObjectArrayFinal.length > 0 &&
+                    selectedOrderObjectArrayFinal.map((item, index) => {
+                      return (
+                        <div
+                          className="confirm-summary-wrapper p-3"
+                          key={index}
+                        >
+                          <div className="d-flex flex-column gap-2">
+                            <div className="d-flex justify-content-between gap-2 align-items-center">
+                              <span className="leftText">Token</span>
+                              <span className="rightText d-flex align-items-center gap-2">
+                                {item.tokenToSellSymbol}
+                                <a
+                                  href={
+                                    item.chain === 1
+                                      ? `https://etherscan.io/token/${item.tokenToSell}`
+                                      : `https://bscscan.com/token/${item.tokenToSell}`
+                                  }
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  style={{ color: "#41D8E7" }}
+                                  className="d-flex align-items-center gap-2 justify-content-center"
+                                >
+                                  <img src={linkIcon} alt="" />{" "}
+                                </a>
+                              </span>
+                            </div>
+                            <div className="d-flex justify-content-between gap-2 align-items-center">
+                              <span className="leftText">Buying</span>
+                              <span className="rightText">
+                                {getFormattedNumber(
+                                  item.amountToSell /
+                                    10 ** item.tokenToSellDecimals
+                                )}{" "}
+                                ({item.tokenToSellSymbol})
+                              </span>
+                            </div>
+                            <div className="d-flex justify-content-between gap-2 align-items-center">
+                              <span className="leftText">Spending</span>
+                              <span className="rightText">
+                                {getFormattedNumber(
+                                  item.amountToBuy /
+                                    10 ** item.tokenToBuyDecimals
+                                )}{" "}
+                                ({item.tokenToBuySymbol})
+                              </span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })}
 
-                <div className="d-flex align-items-center gap-4 justify-content-between">
-                  <button
-                    onClick={() => {
-                      acceptStatus === "buy"
-                        ? handleAcceptOrder(
-                            selectedOrderObjectArrayFinal,
-                            selectedOrderObjectArrayFinal[0].chain
-                          )
-                        : handleApproveOrder(
-                            selectedOrderObjectArrayFinal,
-                            selectedOrderObjectArrayFinal[0].chain
-                          );
-                    }}
-                    className="connect-btn py-1 m-auto w-50"
-                  >
-                    {acceptStatus === "initial"
-                      ? "Approve"
-                      : acceptStatus === "loading-approve"
-                      ? "Approving..."
-                      : acceptStatus === "success-approve"
-                      ? "Success"
-                      : acceptStatus === "error"
-                      ? "Failed!"
-                      : acceptStatus === "buy"
-                      ? "Buy"
-                      : acceptStatus === "loading"
-                      ? "Buying..."
-                      : acceptStatus === "success"
-                      ? "Success"
-                      : "Approve"}
-                  </button>
+                  <div className="d-flex align-items-center gap-4 justify-content-between">
+                    <button
+                      onClick={() => {
+                        acceptStatus === "buy"
+                          ? handleAcceptOrder(
+                              selectedOrderObjectArrayFinal,
+                              selectedOrderObjectArrayFinal[0].chain
+                            )
+                          : handleApproveOrder(
+                              selectedOrderObjectArrayFinal,
+                              selectedOrderObjectArrayFinal[0].chain
+                            );
+                      }}
+                      className="connect-btn py-1 m-auto w-50"
+                    >
+                      {acceptStatus === "initial"
+                        ? "Approve"
+                        : acceptStatus === "loading-approve"
+                        ? "Approving..."
+                        : acceptStatus === "success-approve"
+                        ? "Success"
+                        : acceptStatus === "error"
+                        ? "Failed!"
+                        : acceptStatus === "buy"
+                        ? "Buy"
+                        : acceptStatus === "loading"
+                        ? "Buying..."
+                        : acceptStatus === "success"
+                        ? "Success"
+                        : "Approve"}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
+            ) : (
+              <div className="walletmodal-wrapper gap-3">
+                <div className="d-flex flex-column gap-4">
+                  <h3 style={{ fontSize: 20, color: "#fff" }} className="mb-2">
+                    You are not whitelisted
+                  </h3>
+                  <span className="text-white">
+                    Click the button below in order to get whitelisted and
+                    paritcipate in the token airdrop.
+                  </span>
+                </div>
+
+                <div className="d-flex flex-column mt-4">
+                  <div className="d-flex align-items-center gap-4 justify-content-between">
+                    <button className="connect-btn py-1 m-auto w-50">
+                      Join Airdrop
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </OutsideClickHandler>
         </Modal>
       )}

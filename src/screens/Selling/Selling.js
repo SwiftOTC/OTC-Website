@@ -122,7 +122,8 @@ const Selling = ({
       tokenAddress
     );
 
-    const price = tokenAmount * 10 ** tokenDecimals;
+    const price = new BigNumber(tokenAmount).times(10 ** tokenDecimals).toFixed(0);
+    
     let tokenprice = new BigNumber(price).toFixed(0);
     const tokeToApprove =
       chainId === 1 ? window.config.otc_address : window.config.otc_bnb_address;
