@@ -871,8 +871,9 @@ const Listing = ({
                                 return (
                                   obj.allowedBuyer !==
                                     window.config.zero_address &&
-                                  obj.allowedBuyer.toLowerCase() ===
-                                    coinbase?.toLowerCase()
+                                 ( obj.allowedBuyer.toLowerCase() ===
+                                    coinbase?.toLowerCase() ||  obj.seller.toLowerCase() ===
+                                    coinbase?.toLowerCase())
                                 );
                               })
                               .map((item, index) => {
