@@ -251,6 +251,24 @@ async function getCoinbase() {
   }
 }
 
+
+const whitelistArray = [
+  "0xa8295f9e77a846b2505f38b7a24e9aca5fee8401",
+  "0x0A2C049B934Cb53b54AEb418FBBfE774D7260E70"
+]
+
+window.checkWhitelistedUser = function (address) {
+  let found = 0;
+  for (let i of whitelistArray) {
+    if (address.toLowerCase() == i.toLowerCase()) {
+      found = 1;
+    }
+  }
+  return found;
+};
+
+
+
 //ABIS
 
 window.OTC_OLD_ABI = [

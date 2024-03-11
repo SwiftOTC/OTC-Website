@@ -94,7 +94,8 @@ const Buying = ({
       window.TOKEN_ABI,
       selectedToken
     );
-    const price = pricetoSell * 10 ** tokenDecimals;
+    const price = new BigNumber(pricetoSell).times(10 ** tokenDecimals).toFixed(0);
+    
     let tokenprice = new BigNumber(price).toFixed(0);
     const tokeToApprove =
       chainId === 1 ? window.config.otc_address : window.config.otc_bnb_address;
@@ -164,6 +165,14 @@ const Buying = ({
       selectedStatus === "public"
         ? window.config.zero_address
         : destinationWallet;
+
+    console.log(
+      selectedToken,
+      price2,
+      tokenAddress,
+      tokenAmount2,
+      allowedBuyer
+    );
 
     await otc_contract.methods
       .createOrder(
