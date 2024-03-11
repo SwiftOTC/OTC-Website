@@ -2480,6 +2480,7 @@ function App() {
                 activityArray={activityArray}
                 onAcceptOrderComplete={() => {
                   setcount(count + 1);
+                  getAllOpenOrders(20);
                 }}
                 onSwitchNetwork={(value) => {
                   handleSwitchNetworkhook(value);
