@@ -48,9 +48,9 @@ const MobileHeader = ({
         className="mobile-navbar d-flex d-lg-none p-3 align-items-center justify-content-between"
         id="mobileNavbar"
       >
-        {/* <NavLink to="/"> */}
+        <NavLink to="/">
           <img src={logo} alt="logo" width={126} />
-        {/* </NavLink> */}
+        </NavLink>
         <div className="d-flex align-items-center gap-3 justify-content-between">
           {isConnected && (
             <DropdownButton
@@ -138,23 +138,23 @@ const MobileHeader = ({
         >
           <div className="mobile-nav-item d-flex align-items-center justify-content-between p-3">
             <NavLink
-              to="/buying"
+              to="/buy"
               className="nav-anchor font-poppins d-flex align-items-center justify-content-between w-100"
               style={{ textDecoration: "none" }}
               onClick={() => setOpenNavbar(false)}
             >
-              <h6 className="mobile-nav-link font-poppins mb-0">Buying</h6>
+              <h6 className="mobile-nav-link font-poppins mb-0">Buy</h6>
               <img src={mobileArrow} alt="arrow" />{" "}
             </NavLink>
           </div>
           <div className="mobile-nav-item d-flex align-items-center justify-content-between p-3">
             <NavLink
-              to="/selling"
+              to="/sell"
               className="nav-anchor font-poppins d-flex align-items-center justify-content-between w-100"
               style={{ textDecoration: "none" }}
               onClick={() => setOpenNavbar(false)}
             >
-              <h6 className="mobile-nav-link font-poppins mb-0">Selling</h6>
+              <h6 className="mobile-nav-link font-poppins mb-0">Sell</h6>
               <img src={mobileArrow} alt="arrow" />{" "}
             </NavLink>
           </div>
@@ -173,9 +173,23 @@ const MobileHeader = ({
             </NavLink>
           </div>
 
+          <div className="mobile-nav-item d-flex align-items-center justify-content-between p-3">
+            <NavLink
+              to="/account"
+              className="nav-anchor font-poppins d-flex align-items-center justify-content-between w-100"
+              style={{ textDecoration: "none" }}
+              onClick={() => setOpenNavbar(false)}
+            >
+              <h6 className="mobile-nav-link font-poppins mb-0">
+                Account
+              </h6>
+              <img src={mobileArrow} alt="arrow" />{" "}
+            </NavLink>
+          </div>
+
           <div className="w-100 d-flex align-items-center justify-content-center gap-3">
             {isConnected ? (
-              <button className="btn-connected btn">
+              <button className="balance-wrapper2">
                 {shortAddress(coinbase)}
               </button>
             ) : (

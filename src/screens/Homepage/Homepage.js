@@ -4,6 +4,7 @@ import Faq from "./Faq";
 import TrustedContainer from "./Trusted";
 import MainHero from "./MainHero";
 import { useLocation } from "react-router-dom";
+import OTCRibbon from "../../components/otcRibbon/otcRibbon";
 
 const Homepage = ({
   loading,
@@ -25,8 +26,9 @@ const Homepage = ({
     }
   };
   return (
-    <div className="d-flex flex-column gap-3 container-fluid px-lg-0">
+    <div className="d-flex flex-column container-fluid px-0">
       <MainHero />
+      <OTCRibbon />
       <TrustedContainer />
       <Activity
         activityArray={activityArray}
@@ -35,6 +37,8 @@ const Homepage = ({
         totalOrders2={totalOrders2}
         collectedPage2={collectedPage2}
       />
+      <OTCRibbon />
+
       <Faq />
     </div>
   );

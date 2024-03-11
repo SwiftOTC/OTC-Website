@@ -1,17 +1,21 @@
 .listing-items-wrapper {
-  background: rgb(19, 19, 19);
-  padding: 20px;
   border-radius: 8px;
-  border: 1px solid #b8b8e0;
-  backdrop-filter: blur(12.5px);
-  box-shadow: 0 5px 4px 0 #671ae426;
-  filter: drop-shadow(0 4px 20px #7e3455);
+}
+
+.listing-wrapper-homepage {
+  background: #232846;
+  backdrop-filter: blur(10px);
 }
 
 .listing-single-item {
-  padding: 5px 10px;
-  border-radius: 12px;
+  border-radius: 4px;
+  background: #303a63;
   color: #fff;
+  text-align: center;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 17px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -24,27 +28,113 @@
 
 .active-item {
   cursor: pointer;
-  padding: 5px 10px;
-  border-radius: 12px;
-  background: #fff;
-  color: #7e3455;
+  border-radius: 4px;
+  background: #0d91c3;
+  color: #fff;
+  text-align: center;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: 17px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
- 
-.MuiTableContainer-root {
-  background-color: #bfaab2 !important;
+.checkboxtxt {
+  color: #828fbb;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+  text-transform: capitalize;
 }
 
+.select-btn {
+  border-radius: 20px;
+border: 1px solid #41D8E7;
+background: #303A63;
+color: #FFF;
+text-align: center;
+font-size: 14px;
+font-style: normal;
+font-weight: 500;
+line-height: normal;
+letter-spacing: 0.7px;
+text-transform: capitalize;
+}
+
+.select-btn-active {
+  border-radius: 20px;
+  background: linear-gradient(263deg, #41D8E7 0%, #00A1AF 100%);
+color: #232846;
+text-align: center;
+font-size: 14px;
+font-style: normal;
+font-weight: 500;
+line-height: normal;
+letter-spacing: 0.7px;
+text-transform: capitalize;
+border: 1px solid #41D8E7;
+}
+
+.checkboxtxt-active {
+  color: #41D8E7;
+font-size: 14px;
+font-style: normal;
+font-weight: 500;
+line-height: normal;
+text-transform: capitalize;
+
+}
+
+.MuiFormControlLabel-root {
+  margin-right: 0 !important;
+}
+
+.MuiTableContainer-root {
+  background-color: rgba(76, 99, 166, 0.3) !important;
+}
+
+.MuiTableRow-root {
+  border-radius: 10px !important;
+  border-color: #232846 !important;
+  border-style: solid !important;
+  border-width: 8px 0px !important;
+}
+
+.MuiTableCell-root {
+  border-color: #232846 !important;
+  border-style: solid !important;
+  border-width: 8px 0px !important;
+}
+
+.MuiPaginationItem-root {
+  color: #fff !important;
+}
+
+.MuiTableHead-root,
+.MuiTableCell-stickyHeader {
+  background: #232846 !important;
+}
+
+.MuiTableCell-head {
+  color: #828fbb !important;
+  font-size: 18px !important;
+  font-style: normal !important;
+  font-weight: 600 !important;
+  line-height: normal !important;
+  text-transform: capitalize !important;
+  border-radius: 0px !important;
+}
 
 .table-wrapper {
   display: grid;
-  max-height: 425px;
+  max-height: 440px;
   overflow-y: auto;
-  min-height: 425px;
-  min-width: auto;
+  min-height: 440px;
+  width: 100%;
+  /* min-width: auto; */
 }
 
 /* .MuiPaginationItem-root, .Mui-selected {
@@ -53,14 +143,16 @@
 
 @media only screen and (max-width: 436px) {
   .items-inner-wrapper {
-    flex-direction: column;
+    /* flex-direction: column; */
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 .empty-div-wrapper {
   margin: auto;
   position: sticky;
-  left: 35%;
+  left: 40%;
   width: 0;
   white-space: nowrap;
 }
@@ -98,14 +190,20 @@
   padding: 0px 10px;
 }
 
-
 .MuiTableCell-root {
   position: relative;
+  border-bottom: none !important;
 }
 
 .label-text {
-  font-size: 10px;
   color: #fff;
+  text-align: center;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
+  letter-spacing: 0.7px;
+  text-transform: capitalize;
 }
 
 .walletmodal-wrapper {
@@ -114,19 +212,33 @@
   flex-direction: column;
   border-radius: 20px;
   border: 1px solid #828fbb;
-  background:rgb(19, 19, 19);
+  background: #232846;
+}
+
+.confirm-summary-wrapper {
+  border-radius: 15px;
+  border: 1px solid #a5abbd;
+  background: rgba(21, 24, 40, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 .leftText {
-color: #fff;
-font-size: 14px;
-font-weight: 600;
+  color: #828fbb;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 500;
+  line-height: normal;
 }
 
 .rightText {
   color: #fff;
+  text-align: right;
   font-size: 14px;
+  font-style: normal;
   font-weight: 500;
+  line-height: normal;
+  letter-spacing: 0.7px;
+  text-transform: capitalize;
 }
 
 .summaryseparator {
@@ -134,7 +246,6 @@ font-weight: 600;
   height: 1px;
   width: 100%;
 }
-
 
 .cancel-btn {
   padding: 5px 10px;

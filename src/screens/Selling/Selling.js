@@ -6,6 +6,15 @@ import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
 import getFormattedNumber from "../../hooks/get-formatted-number";
+import OTCRibbon from "../../components/otcRibbon/otcRibbon";
+import chart from "../../assets/svg/chart.svg";
+import bnbIcon from "../../assets/svg/bnbIcon.svg";
+import ethIcon from "../../assets/svg/ethIcon.svg";
+import info from "../../assets/svg/info.svg";
+import infoRed from "../../assets/svg/infoRed.svg";
+import checkActive from "../../assets/svg/checkActive.svg";
+import checkInactive from "../../assets/svg/checkInactive.svg";
+import OutsideClickHandler from "react-outside-click-handler";
 
 const Selling = ({
   isConnected,
@@ -32,6 +41,10 @@ const Selling = ({
   const [sellingStatus, setSellingStatus] = useState("initial");
   const [pricetoSell, setPrice] = useState();
   const [selectedToken, setselectedToken] = useState();
+  const [disabled, setdisabled] = useState(true);
+  const [showTooltip, setShowTooltip] = useState(false);
+  const [selectedStatus, setselectedStatus] = useState("");
+  const [destinationWallet, setdestinationWallet] = useState("");
 
   const { BigNumber } = window;
 
@@ -39,6 +52,7 @@ const Selling = ({
     const web3 = new Web3(window.ethereum);
     if (web3.utils.isAddress(tokenInfo)) {
       if (coinbase) {
+        setdisabled(true);
         const token_contract = new web3.eth.Contract(
           window.TOKEN_ABI,
           tokenInfo
@@ -91,6 +105,11 @@ const Selling = ({
           setTokenName(token_name);
         }
       }
+    } else {
+      setdisabled(false);
+      setTokenAddress("");
+      setTokenSymbol("");
+      setHolderBalance(0);
     }
   };
 
@@ -166,9 +185,19 @@ const Selling = ({
       tokenAmount * 10 ** tokenDecimals
     ).toFixed(0);
 
-    console.log(tokenAddress, tokenAmount2, selectedToken, price2);
+    const allowedBuyer =
+      selectedStatus === "public"
+        ? window.config.zero_address
+        : destinationWallet;
+
     await otc_contract.methods
-      .createOrder(tokenAddress, tokenAmount2, selectedToken, price2)
+      .createOrder(
+        tokenAddress,
+        tokenAmount2,
+        selectedToken,
+        price2,
+        allowedBuyer
+      )
       .send({ from: coinbase })
       .then(() => {
         setListLoading(false);
@@ -262,200 +291,415 @@ const Selling = ({
   }, []);
 
   return (
-    <div className="want-to-sell-wrapper col-lg-4 mt-5">
-      <div className="d-flex flex-column gap-2 align-items-center">
-        <h4 className="text-white">Want to sell</h4>
-
-        <div className="d-flex flex-column gap-3 w-100 input-wrappers">
-          <input
-            className="sell-input"
-            type="text"
-            placeholder="Token Address"
-            value={tokenAddress}
-            onChange={(e) => {
-              setTokenAddress(e.target.value);
-              handleSetTokenData(e.target.value);
-            }}
-          />
-          <input
-            className="sell-input"
-            type="text"
-            placeholder="Token Name"
-            disabled
-            value={tokenName}
-          />
-          <input
-            className="sell-input"
-            type="text"
-            placeholder="Token Symbol"
-            disabled
-            value={tokenSymbol}
-          />
-          <div className="d-flex position-relative w-100 align-items-start align-items-lg-center gap-2 justify-content-between">
-            <div className="d-flex flex-column w-100">
-              <input
-                className="sell-input w-100"
-                type="text"
-                placeholder="Amount of Tokens to Sell"
-                value={tokenAmount}
-                onChange={(e) => {
-                  setTokenAmount(e.target.value);
-                  checkApproval(e.target.value);
-                }}
-              />
-              <span className="balance-text d-flex d-lg-none d-md-none align-items-center gap-1 justify-content-end">
-                Balance:
-                <span className="balance-amount">
-                  <b>{getFormattedNumber(holderBalance, 2)}</b>
-                </span>
-              </span>
-            </div>
-            <div className="d-flex balance-wrapper position-absolute align-items-center gap-2 justify-content-between">
-              <span className="balance-text d-none d-lg-flex d-md-flex flex-column">
-                Balance:{" "}
-                <span className="balance-amount">
-                  <b>{getFormattedNumber(holderBalance, 2)}</b>
-                </span>
-              </span>
-              <button
-                className="max-btn btn"
-                onClick={handleMaxDeposit}
-                disabled={!holderBalance}
-              >
-                Max
-              </button>
-            </div>
-          </div>
-
-          <div className="d-flex position-relative w-100 align-items-center">
-            <input
-              className="sell-input w-100"
-              type="text"
-              placeholder="Price"
-              value={pricetoSell}
-              onChange={(e) => {
-                setPrice(e.target.value);
-              }}
-            />
-            <FormControl sx={{ m: 1, minWidth: 140 }} size="small">
-              <InputLabel id="demo-select-small-label">Select</InputLabel>
-              <Select
-                labelId="demo-select-small-label"
-                id="demo-select-small"
-                value={selectedToken}
-                label="Age"
-                onChange={(e) => {
-                  setselectedToken(e.target.value);
-                }}
-              >
-                {chainId === 1 ? (
-                  Object.keys(window.config.trading_tokens).map((t, i) => {
-                    return (
-                      <MenuItem value={t} key={i}>
-                        <img
-                          src={require(`../../assets/tradingtokens/${window.config.trading_tokens[
-                            t
-                          ]?.symbol.toLowerCase()}Icon.svg`)}
-                          className="mx-1 tokenlogo"
-                          alt=''
-                        />
-                        {window.config.trading_tokens[t]?.symbol}
-                      </MenuItem>
-                    );
-                  })
-                ) : chainId === 56 ? (
-                  Object.keys(window.config.trading_tokens_bnb).map((t, i) => {
-                    return (
-                      <MenuItem value={t} key={i}>
-                        <img
-                          src={require(`../../assets/tradingtokens/${window.config.trading_tokens_bnb[
-                            t
-                          ]?.symbol.toLowerCase()}Icon.svg`)}
-                          className="mx-1 tokenlogo"
-                          alt=''
-                        />
-                        {window.config.trading_tokens_bnb[t]?.symbol}
-                      </MenuItem>
-                    );
-                  })
-                ) : (
-                  <></>
-                )}
-
-                {/* <MenuItem value={20}>Twenty</MenuItem>
-                <MenuItem value={30}>Thirty</MenuItem> */}
-              </Select>
-            </FormControl>
-          </div>
-          <span className="text-secondary">Platform Fee: 1%</span>
-
-          {!isConnected && (
-            <button className="connect-btn btn" onClick={onConnect}>
-              Connect Wallet
-            </button>
-          )}
-          {isConnected && (
-            <button
-              className="connect-btn btn"
-              onClick={() => {
-                !isApprove ? handleApproveOrder() : handleCreateOrder();
-              }}
-              disabled={
-                tokenAddress !== undefined &&
-                tokenAmount !== undefined &&
-                pricetoSell !== undefined &&
-                selectedToken !== undefined
-                  ? false
-                  : true
-              }
-            >
-              {approveLoading || listLoading ? (
-                <>
-                  {sellingStatus === "loadingApprove"
-                    ? "Approving"
-                    : "Listing to sell"}
-                  <div
-                    class="mx-2 spinner-border spinner-border-sm text-light"
-                    role="status"
-                  ></div>
-                </>
-              ) : sellingStatus === "initial" ? (
-                <>Approve</>
-              ) : sellingStatus === "deposit" ? (
-                <>List to sell</>
-              ) : sellingStatus.includes("success") ? (
-                <>Success</>
-              ) : (
-                <>Failed</>
-              )}
-            </button>
-          )}
+    <div className="container-fluid px-0 otherpages-wrapper">
+      <div className="d-flex flex-column gap-5 align-items-center">
+        <div className="d-flex flex-column justify-content-center align-items-center mt-5">
+          <h1 className="text-white font-organetto mainhero-title m-0">
+            Place your sell{" "}
+            <mark className="bg-transparent quicktitle font-organetto">
+              order
+            </mark>
+          </h1>
+          <span className="bottom-text-dexc">
+            We take care of everything else
+          </span>
         </div>
-      </div>
+        <div className="listing-wrapper-homepage container-fluid mb-5 d-flex justify-content-center">
+          <div className="want-to-sell-wrapper col-lg-4 mt-5 mb-5">
+            <div className="d-flex flex-column gap-3 w-100 input-wrappers">
+              <div className="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-2 w-100">
+                <div className="d-flex align-items-center gap-2">
+                  <img src={chart} alt="" />
+                  <span className="placeorder-title">SwiftOTC Sell</span>
+                </div>
+                <div className="d-flex align-items-center gap-2">
+                  <button
+                    onClick={() => {
+                      onSwitchNetwork("0x1");
+                    }}
+                    className={`${
+                      chainId === 1 ? "chainbtn-active" : "chainbtn-inactive"
+                    }  d-flex align-items-center gap-2`}
+                  >
+                    <img src={ethIcon} alt="" width={18} height={18} />
+                    Ethereum
+                  </button>
+                  <button
+                    onClick={() => {
+                      onSwitchNetwork("0x38");
+                    }}
+                    className={`${
+                      chainId === 56 ? "chainbtn-active" : "chainbtn-inactive"
+                    }  d-flex align-items-center gap-2`}
+                  >
+                    <img src={bnbIcon} alt="" width={18} height={18} />
+                    BNB Chain
+                  </button>
+                </div>
+              </div>
 
-      {chainId === 1 ? (
-        <span
-          className="text-white w-100 justify-content-end text-decoration-underline d-flex mt-2"
-          style={{ cursor: "pointer" }}
-          onClick={() => {
-            onSwitchNetwork("0x38");
-          }}
-        >
-          Sell on BNB Chain
-        </span>
-      ) : chainId === 56 ? (
-        <span
-          className="text-white w-100 justify-content-end text-decoration-underline d-flex mt-2"
-          style={{ cursor: "pointer" }}
-          onClick={() => {
-            onSwitchNetwork("0x1");
-          }}
-        >
-          Sell on Ethereum
-        </span>
-      ) : (
-        <></>
-      )}
+              <div className="receive-wrapper p-3">
+                <div className="d-flex flex-column gap-3">
+                  <div className="d-flex gap-2 align-items-center justify-content-between">
+                    <div className="d-flex flex-column gap-2">
+                      <span className="receive-texts">Asset to sell</span>
+                      <FormControl sx={{ m: 1, minWidth: 140 }} size="small">
+                        <InputLabel id="demo-select-small-label">
+                          Select
+                        </InputLabel>
+                        <Select
+                          labelId="demo-select-small-label"
+                          id="demo-select-small"
+                          value={selectedToken}
+                          label="Age"
+                          onChange={(e) => {
+                            setTokenAddress(e.target.value);
+                            handleSetTokenData(e.target.value);
+                          }}
+                        >
+                          {chainId === 1 ? (
+                            Object.keys(window.config.trading_tokens).map(
+                              (t, i) => {
+                                return (
+                                  <MenuItem value={t} key={i}>
+                                    <img
+                                      src={require(`../../assets/tradingtokens/${window.config.trading_tokens[
+                                        t
+                                      ]?.symbol.toLowerCase()}Icon.svg`)}
+                                      className="mx-1 tokenlogo"
+                                      alt=""
+                                    />
+                                    {window.config.trading_tokens[t]?.symbol}
+                                  </MenuItem>
+                                );
+                              }
+                            )
+                          ) : chainId === 56 ? (
+                            Object.keys(window.config.trading_tokens_bnb).map(
+                              (t, i) => {
+                                return (
+                                  <MenuItem value={t} key={i}>
+                                    <img
+                                      src={require(`../../assets/tradingtokens/${window.config.trading_tokens_bnb[
+                                        t
+                                      ]?.symbol.toLowerCase()}Icon.svg`)}
+                                      className="mx-1 tokenlogo"
+                                      alt=""
+                                    />
+                                    {
+                                      window.config.trading_tokens_bnb[t]
+                                        ?.symbol
+                                    }
+                                  </MenuItem>
+                                );
+                              }
+                            )
+                          ) : (
+                            <span></span>
+                          )}
+                          <MenuItem value={"other"}>
+                            <img
+                              src={
+                                require(`../../assets/tradingtokens/otherIcon.svg`)
+                                  .default
+                              }
+                              className="mx-1 tokenlogo"
+                              alt=""
+                            />
+                            Other
+                          </MenuItem>
+                        </Select>
+                      </FormControl>
+                    </div>
+                    <div className="d-flex flex-column w-100 gap-2">
+                      <span className="receive-texts">Token address</span>
+                      <div className="position-relative w-100">
+                        <input
+                          className="sell-input w-100"
+                          type="text"
+                          placeholder="Token Address to Sell"
+                          value={tokenAddress}
+                          disabled={disabled}
+                          onChange={(e) => {
+                            setTokenAddress(e.target.value);
+                            handleSetTokenData(e.target.value);
+                          }}
+                        />
+                        <img
+                          src={infoRed}
+                          alt=""
+                          className="position-absolute infoRed"
+                          onClick={() => {
+                            setShowTooltip(true);
+                          }}
+                        />
+                        <OutsideClickHandler
+                          onOutsideClick={() => {
+                            setShowTooltip(false);
+                          }}
+                        >
+                          <div
+                            className={`tooltip-wrapper p-2 ${
+                              showTooltip && "tooltip-active"
+                            }`}
+                            style={{ top: "-20px", right: 0 }}
+                          >
+                            <p className="tooltip-content m-0">
+                              *Tokens with transfer fees cannot be traded!
+                            </p>
+                          </div>
+                        </OutsideClickHandler>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="d-flex flex-column w-100 gap-2">
+                    <span className="receive-texts">
+                      Amount of tokens to sell
+                    </span>
+                    <div className="d-flex position-relative w-100">
+                      <input
+                        className="sell-input w-100"
+                        type="text"
+                        placeholder="Amount of Tokens to Sell"
+                        value={tokenAmount}
+                        onChange={(e) => {
+                          setTokenAmount(e.target.value);
+                          checkApproval(e.target.value);
+                        }}
+                      />
+                      <button
+                        className={` ${
+                          !holderBalance ? "max-btn-disabled" : "max-btn"
+                        }   btn position-absolute`}
+                        onClick={handleMaxDeposit}
+                        disabled={!holderBalance}
+                      >
+                        Max
+                      </button>
+                    </div>
+                  </div>
+                  <span className="balance-text d-flex align-items-center gap-1">
+                    My Balance: {getFormattedNumber(holderBalance, 3)}{" "}
+                    {tokenSymbol}
+                  </span>
+                </div>
+              </div>
+              <div className="d-flex flex-column gap-2">
+                <span className="text-white">Receive</span>
+                <div className="d-flex position-relative w-100 align-items-center gap-2">
+                  <input
+                    className="sell-input w-100"
+                    type="text"
+                    placeholder="0.00"
+                    value={pricetoSell}
+                    onChange={(e) => {
+                      setPrice(e.target.value);
+                    }}
+                  />
+                  <FormControl sx={{ m: 1, minWidth: 140 }} size="small">
+                    <InputLabel id="demo-select-small-label">Select</InputLabel>
+                    <Select
+                      labelId="demo-select-small-label"
+                      id="demo-select-small"
+                      value={selectedToken}
+                      label="Age"
+                      onChange={(e) => {
+                        setselectedToken(e.target.value);
+                      }}
+                    >
+                      {chainId === 1 ? (
+                        Object.keys(window.config.trading_tokens)
+                          .filter((obj) => {
+                            return obj !== tokenAddress;
+                          })
+                          .map((t, i) => {
+                            return (
+                              <MenuItem value={t} key={i}>
+                                <img
+                                  src={require(`../../assets/tradingtokens/${window.config.trading_tokens[
+                                    t
+                                  ]?.symbol.toLowerCase()}Icon.svg`)}
+                                  className="mx-1 tokenlogo"
+                                  alt=""
+                                />
+                                {window.config.trading_tokens[t]?.symbol}
+                              </MenuItem>
+                            );
+                          })
+                      ) : chainId === 56 ? (
+                        Object.keys(window.config.trading_tokens_bnb)
+                          .filter((obj) => {
+                            return obj !== tokenAddress;
+                          })
+                          .map((t, i) => {
+                            return (
+                              <MenuItem value={t} key={i}>
+                                <img
+                                  src={require(`../../assets/tradingtokens/${window.config.trading_tokens_bnb[
+                                    t
+                                  ]?.symbol.toLowerCase()}Icon.svg`)}
+                                  className="mx-1 tokenlogo"
+                                  alt=""
+                                />
+                                {window.config.trading_tokens_bnb[t]?.symbol}
+                              </MenuItem>
+                            );
+                          })
+                      ) : (
+                        <span></span>
+                      )}
+                    </Select>
+                  </FormControl>
+                </div>
+              </div>
+              <div className="receive-wrapper p-3">
+                <div className="d-flex align-items-center gap-2 justify-content-between w-100">
+                  <span className="receive-texts">Order Status</span>
+                  <div className="d-flex gap-3 align-items-center">
+                    <div
+                      className="position-relative"
+                      onClick={() => {
+                        setselectedStatus("public");
+                      }}
+                    >
+                      <div
+                        className={`${
+                          selectedStatus === "public"
+                            ? "status-item-active"
+                            : "status-item"
+                        } py-1 px-2`}
+                      >
+                        <span
+                          className={`${
+                            selectedStatus === "public"
+                              ? "status-txt-active"
+                              : "status-txt"
+                          }`}
+                        >
+                          Public
+                        </span>
+                      </div>
+                      <img
+                        src={
+                          selectedStatus === "public"
+                            ? checkActive
+                            : checkInactive
+                        }
+                        alt=""
+                        className="checkicon"
+                      />
+                    </div>
+                    <div
+                      className="position-relative"
+                      onClick={() => {
+                        setselectedStatus("private");
+                      }}
+                    >
+                      <div
+                        className={`${
+                          selectedStatus === "private"
+                            ? "status-item-active"
+                            : "status-item"
+                        } py-1 px-2`}
+                      >
+                        <span
+                          className={`${
+                            selectedStatus === "private"
+                              ? "status-txt-active"
+                              : "status-txt"
+                          }`}
+                        >
+                          Private
+                        </span>
+                      </div>
+
+                      <img
+                        src={
+                          selectedStatus === "private"
+                            ? checkActive
+                            : checkInactive
+                        }
+                        alt=""
+                        className="checkicon"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {selectedStatus === "private" && (
+                <div className="receive-wrapper p-3">
+                  <div className="d-flex flex-column gap-2 w-100">
+                    <span className="receive-texts">
+                      Specify the accessing wallet address
+                    </span>
+                    <div className="d-flex gap-3 align-items-center">
+                      <input
+                        className="sell-input w-100"
+                        type="text"
+                        placeholder="0x000..."
+                        value={destinationWallet}
+                        onChange={(e) => {
+                          setdestinationWallet(e.target.value);
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+              <span className="fee-txt">
+                <img src={info} alt="" /> Platform Fee: 1%
+              </span>
+
+              {!isConnected && (
+                <button
+                  className="connect-btn btn custom-width-btn m-auto"
+                  onClick={onConnect}
+                >
+                  Connect Wallet
+                </button>
+              )}
+              {isConnected && (
+                <button
+                  className="connect-btn btn col-4 m-auto"
+                  onClick={() => {
+                    !isApprove ? handleApproveOrder() : handleCreateOrder();
+                  }}
+                  disabled={
+                    tokenAddress !== undefined &&
+                    tokenAmount !== undefined &&
+                    pricetoSell !== undefined &&
+                    selectedToken !== undefined &&
+                    selectedStatus !== ""
+                      ? false
+                      : true
+                  }
+                >
+                  {approveLoading || listLoading ? (
+                    <>
+                      {sellingStatus === "loadingApprove"
+                        ? "Approving"
+                        : "Listing to sell"}
+                      <div
+                        class="mx-2 spinner-border spinner-border-sm text-light"
+                        role="status"
+                      ></div>
+                    </>
+                  ) : sellingStatus === "initial" ? (
+                    <>Approve</>
+                  ) : sellingStatus === "deposit" ? (
+                    <>List to sell</>
+                  ) : sellingStatus.includes("success") ? (
+                    <>Success</>
+                  ) : (
+                    <>Failed</>
+                  )}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+        <OTCRibbon />
+      </div>
     </div>
   );
 };
