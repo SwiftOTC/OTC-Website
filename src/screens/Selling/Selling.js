@@ -22,16 +22,11 @@ const Selling = ({
   coinbase,
   onConnect,
   chainId,
-  openOrdersArray,
-  pendingOrdersArray,
-  completedOrdersArray,
-  activityArray,
   onCreateOrderSuccess,
   onSwitchNetwork,
   isWhiteListed,
 }) => {
   const [tokenAddress, setTokenAddress] = useState();
-  const [tokenName, setTokenName] = useState();
   const [tokenSymbol, setTokenSymbol] = useState();
   const [tokenAmount, setTokenAmount] = useState();
   const [tokenDecimals, setTokenDecimals] = useState();
@@ -98,15 +93,15 @@ const Selling = ({
           setTokenDecimals(token_decimals);
         }
 
-        const token_name = await token_contract.methods
-          .name()
-          .call()
-          .catch((e) => {
-            console.error(e);
-          });
-        if (token_name) {
-          setTokenName(token_name);
-        }
+        // const token_name = await token_contract.methods
+        //   .name()
+        //   .call()
+        //   .catch((e) => {
+        //     console.error(e);
+        //   });
+        // if (token_name) {
+        //   setTokenName(token_name);
+        // }
       }
     } else {
       setdisabled(false);

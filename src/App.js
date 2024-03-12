@@ -2321,8 +2321,6 @@ function App() {
                   setWalletModal(true);
                 }}
                 chainId={chainId}
-                openOrdersArray={openOrdersArray}
-                activityArray={activityArray}
                 onCreateOrderSuccess={() => {
                   setcount(count + 1);
                 }}
@@ -2345,9 +2343,6 @@ function App() {
                   setWalletModal(true);
                 }}
                 chainId={chainId}
-                openOrdersArray={openOrdersArray}
-                completedOrdersArray={completedOrdersArray}
-                activityArray={activityArray}
                 onCreateOrderSuccess={() => {
                   setcount(count + 1);
                 }}
