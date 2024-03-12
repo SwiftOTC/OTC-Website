@@ -1846,7 +1846,7 @@ function App() {
     let userOpenOrdersArray = [];
     let openArray = [];
     let completedArray = [];
-
+    setUserLoading(true);
     const netID = await window.ethereum
       .request({ method: "net_version" })
       .then((data) => {
