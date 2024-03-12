@@ -2329,6 +2329,7 @@ function App() {
                 onSwitchNetwork={(value) => {
                   handleSwitchNetworkhook(value);
                 }}
+                isWhiteListed={isWhiteListed}
               />
             }
           />
@@ -2353,6 +2354,7 @@ function App() {
                 onSwitchNetwork={(value) => {
                   handleSwitchNetworkhook(value);
                 }}
+                isWhiteListed={isWhiteListed}
               />
             }
           />
@@ -2452,6 +2454,8 @@ function App() {
                 onActivityClick={getActivityOrders}
                 onCompletedClick={getAllCompletedOrders}
                 onOpenClick={getAllOpenOrders}
+                isWhiteListed={isWhiteListed}
+
               />
             }
           />
