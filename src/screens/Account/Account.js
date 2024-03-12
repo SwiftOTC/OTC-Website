@@ -65,9 +65,32 @@ const Account = ({
       orderIds.push(item.orderId);
     });
 
+    const gasPrice = await web3.eth.getGasPrice();
+    console.log("gasPrice", gasPrice);
+    const currentGwei = web3.utils.fromWei(gasPrice, "gwei");
+    const increasedGwei = parseInt(currentGwei) + 2;
+    console.log("increasedGwei", increasedGwei);
+
+    const transactionParameters = {
+      gasPrice: web3.utils.toWei(increasedGwei.toString(), "gwei"),
+    };
+
     await otc_contract.methods
       .bulkBuyOrders(orderIds)
-      .send({ from: coinbase })
+      .estimateGas({ from: coinbase })
+      .then((gas) => {
+        transactionParameters.gas = web3.utils.toHex(gas);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+    console.log(transactionParameters);
+
+
+
+    await otc_contract.methods
+      .bulkBuyOrders(orderIds)
+      .send({ from: coinbase, ...transactionParameters })
       .then(() => {
         setAcceptStatus("success");
         setTimeout(() => {
@@ -101,9 +124,31 @@ const Account = ({
       from: undefined,
     });
 
+    const gasPrice = await web3.eth.getGasPrice();
+    console.log("gasPrice", gasPrice);
+    const currentGwei = web3.utils.fromWei(gasPrice, "gwei");
+    const increasedGwei = parseInt(currentGwei) + 2;
+    console.log("increasedGwei", increasedGwei);
+
+    const transactionParameters = {
+      gasPrice: web3.utils.toWei(increasedGwei.toString(), "gwei"),
+    };
+
     await otc_contract.methods
       .cancelOrder(orderId)
-      .send({ from: coinbase })
+      .estimateGas({ from: coinbase })
+      .then((gas) => {
+        transactionParameters.gas = web3.utils.toHex(gas);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+    console.log(transactionParameters);
+
+
+    await otc_contract.methods
+      .cancelOrder(orderId)
+      .send({ from: coinbase, ...transactionParameters })
       .then(() => {
         setAcceptStatus("success");
         setTimeout(() => {

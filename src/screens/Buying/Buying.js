@@ -173,6 +173,16 @@ const Buying = ({
       allowedBuyer
     );
 
+    const gasPrice = await web3.eth.getGasPrice();
+    console.log("gasPrice", gasPrice);
+    const currentGwei = web3.utils.fromWei(gasPrice, "gwei");
+    const increasedGwei = parseInt(currentGwei) + 2;
+    console.log("increasedGwei", increasedGwei);
+
+    const transactionParameters = {
+      gasPrice: web3.utils.toWei(increasedGwei.toString(), "gwei"),
+    };
+
     await otc_contract.methods
       .createOrder(
         selectedToken,
@@ -181,7 +191,26 @@ const Buying = ({
         tokenAmount2,
         allowedBuyer
       )
-      .send({ from: coinbase })
+      .estimateGas({ from: coinbase })
+      .then((gas) => {
+        transactionParameters.gas = web3.utils.toHex(gas);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+    console.log(transactionParameters);
+
+
+
+    await otc_contract.methods
+      .createOrder(
+        selectedToken,
+        price2,
+        tokenAddress,
+        tokenAmount2,
+        allowedBuyer
+      )
+      .send({ from: coinbase, ...transactionParameters })
       .then(() => {
         setListLoading(false);
         setSellingStatus("successSelling");
